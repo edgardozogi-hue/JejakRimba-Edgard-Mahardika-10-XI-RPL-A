@@ -543,6 +543,8 @@ export default function Home() {
         className="px-6 py-10 pb-28 text-center font-mono text-xs text-text-secondary md:pb-10"
       >
         Jejak Rimba — dibuat buat proyek ujian, bukan platform komersial aktif.
+        <br />
+        <span className="text-accent">Edgard Mahardika / 10 XI RPL A</span>
       </motion.footer>
 
       {/* Back to Top */}
