@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jejak Rimba — Status Pembayaran</title>
+<link rel="stylesheet" href="stitch-styles.css">
+<style>
+  @keyframes pulse-ring {
+    0%{box-shadow:0 0 0 0 rgba(74,93,58,0.35)}
+    70%{box-shadow:0 0 0 22px rgba(74,93,58,0)}
+    100%{box-shadow:0 0 0 0 rgba(74,93,58,0)}
+  }
+  .status-ring.ring-success{animation:pulse-ring 2.2s infinite}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M12 4 3 20M12 4l9 16M12 4v16"/></svg>
+      </span>
+      Jejak Rimba
+    </div>
+    <nav class="nav-links">
+      <a href="#">Beranda</a>
+      <a href="#">Katalog</a>
+      <a href="#">Booking</a>
+      <a href="#">Profil</a>
+    </nav>
+    <div class="nav-cta">
+      <button class="icon-btn" aria-label="Pencarian">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <button class="btn btn-primary">Masuk</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="pay-wrap">
+    <div class="status-ring ring-success">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </div>
+    <p class="eyebrow" style="text-align:center">Pembayaran Berhasil</p>
+    <h1 class="section-title" style="margin-top:.5rem">Booking Terkonfirmasi</h1>
+    <p class="lead" style="margin:.6rem auto 0;text-align:center">Tenda Dome 4 Orang telah kamu sewa. Siapkan diri, rimba menunggu.</p>
+
+    <div class="pay-detail">
+      <div class="sum-line"><span>Alat</span><span style="font-weight:600">Tenda Dome 4 Orang</span></div>
+      <div class="sum-line"><span>Penyewa</span><span class="mono">Rizki Pratama</span></div>
+      <div class="sum-line"><span>Tanggal sewa</span><span class="mono">12 Jun 2026</span></div>
+      <div class="sum-line"><span>Tanggal kembali</span><span class="mono">15 Jun 2026</span></div>
+      <div class="sum-line"><span>Lokasi ambil</span><span style="font-weight:600">Basecamp Gunung</span></div>
+      <div class="sum-divider"></div>
+      <div class="sum-line"><span>Total dibayar</span><span class="mono" style="color:var(--ember);font-weight:700;font-size:1.05rem">Rp 185.000</span></div>
+      <div class="sum-line"><span>ID Transaksi</span><span class="mono">JR-2026-0X4F9</span></div>
+    </div>
+
+    <div class="pay-actions">
+      <button class="btn btn-primary">Lihat Detail Booking</button>
+      <button class="btn btn-ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M12 4 3 20M12 4l9 16M12 4v16"/></svg>
+        Sewa Lagi
+      </button>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span>Jejak Rimba — Sewa alat outdoor, tinggal jalan.</span>
+    <span class="mono">© 2026 Jejak Rimba</span>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,118 @@
+@import "tailwindcss";
+@import "@fontsource/archivo/400.css";
+@import "@fontsource/archivo/500.css";
+@import "@fontsource/archivo/600.css";
+@import "@fontsource/archivo/700.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+
+:root {
+  --bark: #1a1714;
+  --bark-2: #23201b;
+  --moss: #4a5d3a;
+  --moss-light: #6b8354;
+  --ember: #c4622d;
+  --ember-light: #e08148;
+  --stone: #8b8378;
+  --paper: #ede6d6;
+  --paper-dim: #d9d0bc;
+}
+
+:root,
+.light {
+  --bg: var(--paper);
+  --bg-elevated: #f5f1e8;
+  --surface: #ffffff;
+  --surface-border: rgba(26, 23, 20, 0.12);
+  --text-primary: var(--bark);
+  --text-secondary: var(--stone);
+  --accent: var(--ember);
+  --accent-hover: var(--ember-light);
+  --accent-secondary: var(--moss);
+  --nav-bg: #ffffff;
+}
+
+.dark {
+  --bg: var(--bark);
+  --bg-elevated: var(--bark-2);
+  --surface: #2a2620;
+  --surface-border: rgba(237, 230, 214, 0.12);
+  --text-primary: var(--paper);
+  --text-secondary: #a8a096;
+  --accent: var(--ember-light);
+  --accent-hover: var(--ember);
+  --accent-secondary: var(--moss-light);
+  --nav-bg: rgba(26, 23, 20, 0.92);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --bg: var(--bark);
+    --bg-elevated: var(--bark-2);
+    --surface: #2a2620;
+    --surface-border: rgba(237, 230, 214, 0.12);
+    --text-primary: var(--paper);
+    --text-secondary: #a8a096;
+    --accent: var(--ember-light);
+    --accent-hover: var(--ember);
+    --accent-secondary: var(--moss-light);
+  --nav-bg: #1a1714;
+  }
+}
+
+@theme inline {
+  --color-bark: var(--bark);
+  --color-bark-2: var(--bark-2);
+  --color-moss: var(--moss);
+  --color-moss-light: var(--moss-light);
+  --color-ember: var(--ember);
+  --color-ember-light: var(--ember-light);
+  --color-stone: var(--stone);
+  --color-paper: var(--paper);
+  --color-paper-dim: var(--paper-dim);
+
+  /* Semantic tokens exposed to Tailwind (bg-*, text-*, border-* utilities) */
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-surface: var(--surface);
+  --color-surface-border: var(--surface-border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-secondary: var(--accent-secondary);
+  --color-nav-bg: var(--nav-bg);
+
+  --font-display: "Archivo", sans-serif;
+  --font-sans: "Archivo", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.contour-bg {
+  background-color: var(--bark);
+  background-image:
+    radial-gradient(circle at 20% 30%, transparent 0, transparent 40px, rgba(237, 230, 214, 0.035) 41px, rgba(237, 230, 214, 0.035) 42px, transparent 43px),
+    radial-gradient(circle at 20% 30%, transparent 0, transparent 90px, rgba(237, 230, 214, 0.035) 91px, rgba(237, 230, 214, 0.035) 92px, transparent 93px),
+    radial-gradient(circle at 20% 30%, transparent 0, transparent 140px, rgba(237, 230, 214, 0.035) 141px, rgba(237, 230, 214, 0.035) 142px, transparent 143px),
+    radial-gradient(circle at 78% 65%, transparent 0, transparent 60px, rgba(237, 230, 214, 0.03) 61px, rgba(237, 230, 214, 0.03) 62px, transparent 63px),
+    radial-gradient(circle at 78% 65%, transparent 0, transparent 110px, rgba(237, 230, 214, 0.03) 111px, rgba(237, 230, 214, 0.03) 112px, transparent 113px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

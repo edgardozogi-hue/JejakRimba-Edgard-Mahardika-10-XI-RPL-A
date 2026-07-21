@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jejak Rimba — Konfirmasi Booking</title>
+<link rel="stylesheet" href="stitch-styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M12 4 3 20M12 4l9 16M12 4v16"/></svg>
+      </span>
+      Jejak Rimba
+    </div>
+    <nav class="nav-links">
+      <a href="#">Beranda</a>
+      <a href="#">Katalog</a>
+      <a href="#">Booking</a>
+      <a href="#">Profil</a>
+    </nav>
+    <div class="nav-cta">
+      <button class="icon-btn" aria-label="Pencarian">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <button class="btn btn-primary">Masuk</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="page-head">
+    <p class="eyebrow">Checkout</p>
+    <h1 class="display" style="font-size:clamp(2rem,4vw,2.75rem)">Konfirmasi Booking</h1>
+    <p class="lead" style="margin-top:.6rem">Isi data penyewa dan cek ringkasan sewa sebelum membayar.</p>
+  </section>
+
+  <section class="two-col" style="padding-bottom:3rem">
+
+    <!-- LEFT: form -->
+    <div class="card" style="padding:1.5rem">
+      <h3 style="font-size:1.15rem;margin-bottom:1.25rem">Data Penyewa</h3>
+      <form onsubmit="return false">
+        <div class="field">
+          <label for="nama">Nama Penyewa</label>
+          <input id="nama" type="text" placeholder="Misal: Rizki Pratama" value="Rizki Pratama">
+        </div>
+        <div class="field">
+          <label for="telp">Nomor Telepon</label>
+          <input id="telp" type="tel" placeholder="08xx-xxxx-xxxx" value="0812-3344-5566">
+        </div>
+        <div class="field">
+          <label for="sewa">Tanggal Sewa</label>
+          <input id="sewa" type="date" value="2026-06-12">
+        </div>
+        <div class="field">
+          <label for="kembali">Tanggal Kembali</label>
+          <input id="kembali" type="date" value="2026-06-15">
+        </div>
+        <div class="field">
+          <label for="lokasi">Lokasi Pengambilan</label>
+          <select id="lokasi">
+            <option>Basecamp Gunung — Bandung</option>
+            <option>Rimba Outdoor — Jakarta</option>
+            <option>Pendaki Store — Malang</option>
+          </select>
+        </div>
+      </form>
+    </div>
+
+    <!-- RIGHT: summary -->
+    <aside class="summary">
+      <h3>Ringkasan Sewa</h3>
+      <div style="display:flex;gap:.85rem;align-items:center;margin-bottom:1rem">
+        <div class="bk-media g-tenda" style="width:64px;height:64px;border-radius:12px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M12 4 3 20M12 4l9 16M12 4v16"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:1rem">Tenda Dome 4 Orang</div>
+          <div class="mono" style="font-size:.75rem;color:var(--stone)">Basecamp Gunung</div>
+        </div>
+      </div>
+      <div class="sum-line"><span>Lama sewa</span><span class="mono">3 hari</span></div>
+      <div class="sum-line"><span>Sewa (3 x Rp 45.000)</span><span class="mono">Rp 135.000</span></div>
+      <div class="sum-line"><span>Deposit jaminan</span><span class="mono">Rp 50.000</span></div>
+      <div class="sum-divider"></div>
+      <div class="sum-line"><span>Subtotal</span><span class="mono">Rp 185.000</span></div>
+      <div class="sum-total" style="margin-top:.75rem">
+        <span style="font-weight:700">Total</span>
+        <span class="mono">Rp 185.000</span>
+      </div>
+      <button class="btn btn-primary btn-block" style="margin-top:1.25rem">
+        Konfirmasi &amp; Bayar
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+      <p class="mono" style="font-size:.7rem;color:var(--stone);text-align:center;margin-top:.75rem">Deposit dikembalikan setelah alat kembali utuh.</p>
+    </aside>
+
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span>Jejak Rimba — Sewa alat outdoor, tinggal jalan.</span>
+    <span class="mono">© 2026 Jejak Rimba</span>
+  </div>
+</footer>
+
+</body>
+</html>

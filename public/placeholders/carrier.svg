@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Background circle -->
+  <circle cx="200" cy="150" r="110" fill="#EDE6D6" opacity="0.5"/>
+
+  <!-- Backpack main body -->
+  <path d="M145 120 C145 95, 165 75, 200 75 C235 75, 255 95, 255 120 L260 205 C260 225, 245 240, 200 240 C155 240, 140 225, 140 205 Z" fill="#8B7355"/>
+
+  <!-- Backpack top flap -->
+  <path d="M145 120 C145 95, 165 75, 200 75 C235 75, 255 95, 255 120" fill="#7A5C3A" stroke="#7A5C3A" stroke-width="2"/>
+
+  <!-- Backpack main compartment divider -->
+  <path d="M155 140 L245 140" stroke="#6B5B3F" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Front pocket -->
+  <path d="M165 145 L235 145 L235 200 C235 215, 220 225, 200 225 C180 225, 165 215, 165 200 Z" fill="#A67B5B"/>
+
+  <!-- Front pocket zipper -->
+  <line x1="170" y1="155" x2="230" y2="155" stroke="#8B7355" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="170" y1="165" x2="230" y2="165" stroke="#8B7355" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Daisy chain webbing -->
+  <line x1="148" y1="125" x2="148" y2="200" stroke="#7A5C3A" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="252" y1="125" x2="252" y2="200" stroke="#7A5C3A" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="146" y1="140" x2="150" y2="140" stroke="#7A5C3A" stroke-width="2"/>
+  <line x1="146" y1="155" x2="150" y2="155" stroke="#7A5C3A" stroke-width="2"/>
+  <line x1="146" y1="170" x2="150" y2="170" stroke="#7A5C3A" stroke-width="2"/>
+  <line x1="146" y1="185" x2="150" y2="185" stroke="#7A5C3A" stroke-width="2"/>
+  <line x1="250" y1="140" x2="254" y2="140" stroke="#7A5C3A" stroke-width="2"/>
+  <line x1="250" y1="155" x2="254" y2="155" stroke="#7A5C3A" stroke-width="2"/>
+  <line x1="250" y1="170" x2="254" y2="170" stroke="#7A5C3A" stroke-width="2"/>
+  <line x1="250" y1="185" x2="254" y2="185" stroke="#7A5C3A" stroke-width="2"/>
+
+  <!-- Shoulder straps -->
+  <path d="M175 90 C170 75, 165 65, 160 55 L155 50" stroke="#6B5B3F" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <path d="M225 90 C230 75, 235 65, 240 55 L245 50" stroke="#6B5B3F" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+  <!-- Strap padding -->
+  <path d="M172 80 C168 70, 164 62, 160 55" stroke="#5A4A32" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.4"/>
+  <path d="M228 80 C232 70, 236 62, 240 55" stroke="#5A4A32" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.4"/>
+
+  <!-- Hip belt -->
+  <path d="M140 210 C140 220, 155 230, 200 230 C245 230, 260 220, 260 210" stroke="#6B5B3F" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+  <!-- Top handle -->
+  <path d="M190 78 C190 68, 195 60, 200 60 C205 60, 210 68, 210 78" stroke="#7A5C3A" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+  <!-- Side compression straps -->
+  <line x1="140" y1="155" x2="148" y2="155" stroke="#6B5B3F" stroke-width="1.5"/>
+  <line x1="140" y1="175" x2="148" y2="175" stroke="#6B5B3F" stroke-width="1.5"/>
+  <line x1="252" y1="155" x2="260" y2="155" stroke="#6B5B3F" stroke-width="1.5"/>
+  <line x1="252" y1="175" x2="260" y2="175" stroke="#6B5B3F" stroke-width="1.5"/>
+
+  <!-- Accent orange detail on zipper -->
+  <rect x="196" y="152" width="8" height="3" rx="1" fill="#C4622D"/>
+  <rect x="196" y="162" width="8" height="3" rx="1" fill="#C4622D"/>
+</svg>

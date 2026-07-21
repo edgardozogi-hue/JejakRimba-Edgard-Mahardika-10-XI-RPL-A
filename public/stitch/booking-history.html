@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jejak Rimba — Riwayat Booking</title>
+<link rel="stylesheet" href="stitch-styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M12 4 3 20M12 4l9 16M12 4v16"/></svg>
+      </span>
+      Jejak Rimba
+    </div>
+    <nav class="nav-links">
+      <a href="#">Beranda</a>
+      <a href="#">Katalog</a>
+      <a href="#">Booking</a>
+      <a href="#">Profil</a>
+    </nav>
+    <div class="nav-cta">
+      <button class="icon-btn" aria-label="Pencarian">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <button class="btn btn-primary">Masuk</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="page-head">
+    <p class="eyebrow">Akun Saya</p>
+    <div class="row">
+      <div>
+        <h1 class="display">Riwayat Booking</h1>
+        <p class="lead" style="margin-top:.6rem">Lacak semua sewa alat rimba kamu, dari yang sedang diproses hingga selesai.</p>
+      </div>
+      <button class="btn btn-ghost">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        Filter
+      </button>
+    </div>
+  </section>
+
+  <section class="booking-grid">
+
+    <!-- Booking: success -->
+    <article class="card card-hover">
+      <div class="bk-row">
+        <div class="bk-media g-tenda">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M12 4 3 20M12 4l9 16M12 4v16"/></svg>
+        </div>
+        <div class="bk-main">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem">
+            <h3 class="bk-name">Tenda Dome 4 Orang</h3>
+            <span class="badge badge-success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              Selesai
+            </span>
+          </div>
+          <div class="bk-dates">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            12 Jun – 15 Jun 2026
+          </div>
+          <div class="bk-foot">
+            <span class="bk-total">Rp 135.000</span>
+            <button class="btn btn-ghost">Detail</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Booking: pending -->
+    <article class="card card-hover">
+      <div class="bk-row">
+        <div class="bk-media g-carrier">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V8a2 2 0 0 1 2-2h2M20 20V8a2 2 0 0 0-2-2h-2M4 12h16M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+        </div>
+        <div class="bk-main">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem">
+            <h3 class="bk-name">Carrier 60 Liter</h3>
+            <span class="badge badge-pending">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              Menunggu
+            </span>
+          </div>
+          <div class="bk-dates">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            20 Jun – 23 Jun 2026
+          </div>
+          <div class="bk-foot">
+            <span class="bk-total">Rp 90.000</span>
+            <button class="btn btn-primary">Bayar</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Booking: cancelled -->
+    <article class="card card-hover">
+      <div class="bk-row">
+        <div class="bk-media g-kompor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/></svg>
+        </div>
+        <div class="bk-main">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem">
+            <h3 class="bk-name">Kompor Portable Gas</h3>
+            <span class="badge badge-cancelled">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              Batal
+            </span>
+          </div>
+          <div class="bk-dates">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            05 Jun – 07 Jun 2026
+          </div>
+          <div class="bk-foot">
+            <span class="bk-total">Rp 24.000</span>
+            <button class="btn btn-ghost">Sewa Lagi</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Booking: another pending -->
+    <article class="card card-hover">
+      <div class="bk-row">
+        <div class="bk-media g-sleeping">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </div>
+        <div class="bk-main">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem">
+            <h3 class="bk-name">Sleeping Bag -5C</h3>
+            <span class="badge badge-pending">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              Menunggu
+            </span>
+          </div>
+          <div class="bk-dates">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            28 Jun – 30 Jun 2026
+          </div>
+          <div class="bk-foot">
+            <span class="bk-total">Rp 36.000</span>
+            <button class="btn btn-primary">Bayar</button>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </section>
+
+  <!-- Empty state (shown when no bookings) -->
+  <section class="empty" style="margin-top:2.5rem">
+    <div class="empty-art">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/><circle cx="12" cy="12" r="9" opacity=".0"/></svg>
+    </div>
+    <h3>Belum ada booking</h3>
+    <p>Kamu belum menyewa alat apapun. Jelajahi katalog dan mulai petualanganmu.</p>
+    <button class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M12 4 3 20M12 4l9 16M12 4v16"/></svg>
+      Jelajahi Katalog
+    </button>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span>Jejak Rimba — Sewa alat outdoor, tinggal jalan.</span>
+    <span class="mono">© 2026 Jejak Rimba</span>
+  </div>
+</footer>
+
+</body>
+</html>
