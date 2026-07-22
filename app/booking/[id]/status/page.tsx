@@ -1,53 +1,56 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle, Clock, XCircle, Tent, ArrowLeft, RefreshCw, PhoneCall } from "lucide-react";
+import { Tent, ArrowLeft, RefreshCw, PhoneCall, Check, Clock, X, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import PageShell from "../../../components/PageShell";
 import { staggerContainer, fadeUp, scaleIn, spring } from "../../../lib/animations";
 
-type PaymentStatus = "success" | "pending" | "failed";
-
-// ── Config ──
+type BookingStatus = "active" | "completed" | "waiting" | "cancelled";
 
 const statusConfig: Record<
-  PaymentStatus,
-  { label: string; desc: string; icon: React.ComponentType<{ size?: number; className?: string }>; color: string }
+  BookingStatus,
+  { label: string; desc: string; icon: React.ComponentType<{ size?: number; className?: string }>; color: string; bg: string }
 > = {
-  success: {
-    label: "Pembayaran Berhasil",
-    desc: "Terima kasih! Pesanan kamu sudah terkonfirmasi.",
-    icon: CheckCircle,
+  active: {
+    label: "Sedang Berlangsung",
+    desc: "Alat sedang kamu sewa. Nikmati petualanganmu!",
+    icon: AlertCircle,
+    color: "text-blue-500",
+    bg: "bg-blue-500/10",
+  },
+  completed: {
+    label: "Selesai",
+    desc: "Penyewaan telah selesai. Terima kasih!",
+    icon: Check,
     color: "text-moss-light",
+    bg: "bg-moss-light/10",
   },
-  pending: {
-    label: "Menunggu Pembayaran",
-    desc: "Silakan selesaikan pembayaran dalam 1x24 jam.",
+  waiting: {
+    label: "Menunggu Konfirmasi",
+    desc: "Pesananmu sedang diproses oleh mitra penyedia.",
     icon: Clock,
-    color: "text-amber",
+    color: "text-amber-400",
+    bg: "bg-amber-400/10",
   },
-  failed: {
-    label: "Pembayaran Gagal",
-    desc: "Pembayaran tidak dapat diproses. Silakan coba lagi atau hubungi admin.",
-    icon: XCircle,
+  cancelled: {
+    label: "Dibatalkan",
+    desc: "Penyewaan ini telah dibatalkan.",
+    icon: X,
     color: "text-red",
+    bg: "bg-red/10",
   },
 };
-
-// ── Helpers ──
 
 function formatPrice(price: number) {
   return `Rp${price.toLocaleString("id-ID")}`;
 }
 
-// ── Page ──
-
 export default function StatusPembayaranPage() {
   const params = useParams();
 
-  // Mock — change to test different states: "success" | "pending" | "failed"
-  const status: PaymentStatus = "success" as PaymentStatus;
+  const status: BookingStatus = "active" as BookingStatus;
   const config = statusConfig[status];
   const Icon = config.icon;
 
@@ -67,14 +70,14 @@ export default function StatusPembayaranPage() {
         animate="visible"
         variants={staggerContainer}
       >
-        {/* ── Large animated icon ── */}
+        {/* Large icon outline style */}
         <motion.div variants={scaleIn} className="mx-auto mb-6">
-          <div className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-bg-elevated">
+          <div className={`inline-flex h-24 w-24 items-center justify-center rounded-full ${config.bg}`}>
             <Icon size={52} className={config.color} />
           </div>
         </motion.div>
 
-        {/* ── Status label ── */}
+        {/* Status label */}
         <motion.h1 variants={fadeUp} className="font-display text-2xl font-bold text-text-primary">
           {config.label}
         </motion.h1>
@@ -82,7 +85,7 @@ export default function StatusPembayaranPage() {
           {config.desc}
         </motion.p>
 
-        {/* ── Booking summary ── */}
+        {/* Booking summary */}
         <motion.div
           variants={fadeUp}
           className="mt-8 rounded-2xl border border-surface-border bg-surface p-5 text-left"
@@ -113,9 +116,9 @@ export default function StatusPembayaranPage() {
           </div>
         </motion.div>
 
-        {/* ── CTAs based on status ── */}
+        {/* CTAs based on status */}
         <motion.div variants={fadeUp} className="mt-8 space-y-3">
-          {status === "success" && (
+          {status === "active" && (
             <Link href="/booking">
               <motion.div
                 whileHover={{ scale: 1.04 }}
@@ -129,7 +132,32 @@ export default function StatusPembayaranPage() {
             </Link>
           )}
 
-          {status === "pending" && (
+          {status === "completed" && (
+            <>
+              <Link href="/katalog">
+                <motion.div
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={spring}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-paper transition hover:bg-accent-hover"
+                >
+                  Sewa Lagi
+                </motion.div>
+              </Link>
+              <Link href="/booking">
+                <motion.div
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={spring}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface px-6 py-3 text-sm font-semibold text-text-primary transition hover:border-accent"
+                >
+                  Riwayat Booking
+                </motion.div>
+              </Link>
+            </>
+          )}
+
+          {status === "waiting" && (
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
@@ -137,13 +165,13 @@ export default function StatusPembayaranPage() {
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-paper transition hover:bg-accent-hover"
             >
               <RefreshCw size={18} />
-              Coba Lagi
+              Cek Status
             </motion.button>
           )}
 
-          {status === "failed" && (
+          {status === "cancelled" && (
             <>
-              <Link href="/booking">
+              <Link href="/katalog">
                 <motion.div
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.96 }}
@@ -167,7 +195,7 @@ export default function StatusPembayaranPage() {
           )}
         </motion.div>
 
-        {/* ── Back link for all statuses ── */}
+        {/* Back link */}
         <motion.div variants={fadeUp} className="mt-6">
           <Link
             href="/booking"

@@ -2,32 +2,26 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { MapPin, Phone, Mail, Camera, Music, ArrowUpRight } from "lucide-react";
+import { MapPin, Phone, Mail, Camera, Globe, Music, ArrowUpRight } from "lucide-react";
 import { spring, fadeUp, staggerContainer } from "../lib/animations";
 
-const footerLinks = [
-  {
-    title: "Navigasi",
-    items: [
-      { label: "Beranda", href: "/" },
-      { label: "Katalog", href: "/katalog" },
-      { label: "Booking", href: "/booking" },
-      { label: "Profil", href: "/profil" },
-    ],
-  },
-  {
-    title: "Bantuan",
-    items: [
-      { label: "Cara Sewa", href: "/" },
-      { label: "Syarat & Ketentuan", href: "/" },
-      { label: "Kebijakan Privasi", href: "/" },
-      { label: "FAQ", href: "/" },
-    ],
-  },
+const navLinks = [
+  { label: "Beranda", href: "/" },
+  { label: "Katalog", href: "/katalog" },
+  { label: "Booking", href: "/booking" },
+  { label: "Profil", href: "/profil" },
+];
+
+const bantuanLinks = [
+  { label: "Cara Sewa", href: "/" },
+  { label: "Syarat & Ketentuan", href: "/syarat-ketentuan" },
+  { label: "Kebijakan Privasi", href: "/kebijakan-privasi" },
+  { label: "FAQ", href: "/faq" },
 ];
 
 const socialLinks = [
   { label: "Instagram", icon: Camera, href: "#" },
+  { label: "Facebook", icon: Globe, href: "#" },
   { label: "TikTok", icon: Music, href: "#" },
 ];
 
@@ -74,30 +68,51 @@ export default function Footer() {
             </div>
           </motion.div>
 
-          {/* Nav columns */}
-          {footerLinks.map((col) => (
-            <motion.div key={col.title} variants={fadeUp} className="lg:col-span-2">
-              <h3 className="font-display text-sm font-bold tracking-wider text-text-primary">
-                {col.title}
-              </h3>
-              <ul className="mt-4 space-y-3">
-                {col.items.map((item) => (
-                  <li key={item.label}>
-                    <Link
-                      href={item.href}
-                      className="group inline-flex items-center gap-1 font-display text-sm text-text-secondary transition hover:text-accent"
-                    >
-                      {item.label}
-                      <ArrowUpRight
-                        size={12}
-                        className="opacity-0 transition group-hover:opacity-100"
-                      />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          ))}
+          {/* Navigasi */}
+          <motion.div variants={fadeUp} className="lg:col-span-2">
+            <h3 className="font-display text-sm font-bold tracking-wider text-text-primary">
+              Navigasi
+            </h3>
+            <ul className="mt-4 space-y-3">
+              {navLinks.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="group inline-flex items-center gap-1 font-display text-sm text-text-secondary transition hover:text-accent"
+                  >
+                    {item.label}
+                    <ArrowUpRight
+                      size={12}
+                      className="opacity-0 transition group-hover:opacity-100"
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Bantuan */}
+          <motion.div variants={fadeUp} className="lg:col-span-2">
+            <h3 className="font-display text-sm font-bold tracking-wider text-text-primary">
+              Bantuan
+            </h3>
+            <ul className="mt-4 space-y-3">
+              {bantuanLinks.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="group inline-flex items-center gap-1 font-display text-sm text-text-secondary transition hover:text-accent"
+                  >
+                    {item.label}
+                    <ArrowUpRight
+                      size={12}
+                      className="opacity-0 transition group-hover:opacity-100"
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
 
           {/* Contact column */}
           <motion.div variants={fadeUp} className="lg:col-span-4">
