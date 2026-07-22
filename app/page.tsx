@@ -15,9 +15,10 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { equipmentList, locations } from "./lib/data";
+import { equipmentList, locations, testimonials } from "./lib/data";
 import PageShell from "./components/PageShell";
 import MagneticButton from "./components/MagneticButton";
+import StarRating from "./components/StarRating";
 import {
   fadeUp,
   staggerContainer,
@@ -478,6 +479,75 @@ export default function Home() {
         </div>
       </motion.section>
 
+      {/* Testimoni */}
+      <section className="border-t border-surface-border">
+        <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={staggerContainer}
+            className="text-center"
+          >
+            <motion.p
+              variants={fadeUp}
+              className="font-mono text-xs tracking-[0.2em] text-accent"
+            >
+              TESTIMONI
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="mt-4 font-display text-3xl font-bold text-text-primary md:text-4xl"
+            >
+              Apa Kata Mereka
+            </motion.h2>
+            <motion.p
+              variants={fadeUp}
+              className="mx-auto mt-3 max-w-lg font-display text-sm text-text-secondary"
+            >
+              Pengalaman nyata dari para pendaki dan campers yang sudah
+              menggunakan layanan Jejak Rimba.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={staggerContainer}
+            className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {testimonials.map((t) => (
+              <motion.div
+                key={t.id}
+                variants={scaleIn}
+                className="group rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-black/5 transition hover:-translate-y-1 hover:shadow-md dark:ring-white/10"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 font-display text-sm font-bold text-accent">
+                      {t.avatar}
+                    </div>
+                    <div>
+                      <p className="font-display text-sm font-semibold text-text-primary">
+                        {t.name}
+                      </p>
+                      <p className="font-display text-xs text-text-secondary">
+                        {t.asal}
+                      </p>
+                    </div>
+                  </div>
+                  <StarRating rating={t.rating} size={12} />
+                </div>
+                <p className="mt-4 font-display text-sm leading-relaxed text-text-secondary">
+                  &ldquo;{t.komentar}&rdquo;
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="bg-bg-elevated border-t border-surface-border px-6 py-24">
         <div className="mx-auto max-w-6xl text-center">
@@ -534,18 +604,6 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-
-      {/* Footer */}
-      <motion.footer
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        className="px-6 py-10 pb-28 text-center font-mono text-xs text-text-secondary md:pb-10"
-      >
-        Jejak Rimba — dibuat buat proyek ujian, bukan platform komersial aktif.
-        <br />
-        <span className="text-accent">Edgard Mahardika / 10 XI RPL A</span>
-      </motion.footer>
 
       {/* Back to Top */}
       {showBackToTop && (

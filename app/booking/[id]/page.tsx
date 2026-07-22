@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useMemo, useEffect } from "react";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import {
   ArrowLeft,
   User,
@@ -57,6 +57,26 @@ const categoryImageMap: Record<string, string> = {
   Jaket: "/placeholders/jaket.svg",
 };
 
+// ── Animated Price Counter ──
+
+function AnimatedPrice({ value, className }: { value: number; className?: string }) {
+  const motionValue = useMotionValue(value);
+  const springValue = useSpring(motionValue, { stiffness: 80, damping: 20 });
+  const rounded = useTransform(springValue, (v) => Math.round(v));
+
+  useEffect(() => {
+    motionValue.set(value);
+  }, [value, motionValue]);
+
+  const [display, setDisplay] = useState(value);
+  useEffect(() => {
+    const unsubscribe = rounded.on("change", (v) => setDisplay(v));
+    return unsubscribe;
+  }, [rounded]);
+
+  return <span className={className}>{formatPrice(display)}</span>;
+}
+
 // ── Booking Step Indicator ──
 
 const steps = [
@@ -72,19 +92,36 @@ function StepIndicator({ active }: { active: number }) {
         <div key={s.num} className="flex items-center">
           {/* Circle + label */}
           <div className="flex flex-col items-center gap-1.5">
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
+            <motion.div
+              className={`relative flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors duration-300 ${
                 s.num <= active
-                  ? "bg-accent text-paper shadow-sm shadow-accent/30"
+                  ? "bg-accent text-paper"
                   : "bg-surface text-text-secondary ring-1 ring-surface-border"
               }`}
+              animate={
+                s.num === active
+                  ? {
+                      scale: [1, 1.1, 1],
+                      boxShadow: [
+                        "0 0 0 0 rgba(196,98,45,0.4)",
+                        "0 0 0 8px rgba(196,98,45,0)",
+                        "0 0 0 0 rgba(196,98,45,0)",
+                      ],
+                    }
+                  : {}
+              }
+              transition={
+                s.num === active
+                  ? { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                  : {}
+              }
             >
               {s.num < active ? (
                 <Check size={14} strokeWidth={3} />
               ) : (
                 s.num
               )}
-            </div>
+            </motion.div>
             <span
               className={`font-display text-[10px] font-semibold transition-colors ${
                 s.num === active ? "text-accent" : "text-text-secondary"
@@ -97,13 +134,16 @@ function StepIndicator({ active }: { active: number }) {
           {/* Connector line */}
           {i < steps.length - 1 && (
             <div className="mx-2 mb-5 h-px w-12 sm:w-16 md:w-20">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  s.num < active
-                    ? "bg-accent"
-                    : "bg-surface-border"
-                }`}
-                style={{ height: 2 }}
+              <motion.div
+                className="h-full rounded-full"
+                animate={{
+                  backgroundColor:
+                    s.num < active
+                      ? "#c4622d"
+                      : "var(--surface-border, rgba(26,23,20,0.12))",
+                  height: s.num < active ? 3 : 2,
+                }}
+                transition={{ duration: 0.4 }}
               />
             </div>
           )}
@@ -346,10 +386,10 @@ export default function BookingFormPage() {
                     >
                       Tanggal Ambil
                     </label>
-                    <div className="relative">
+                    <div className="relative rounded-xl transition focus-within:ring-2 focus-within:ring-accent/30">
                       <CalendarDays
                         size={16}
-                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary lg:left-4"
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4"
                       />
                       <input
                         id="tanggalAmbil"
@@ -360,7 +400,7 @@ export default function BookingFormPage() {
                           clearError("tanggalAmbil");
                         }}
                         min={today}
-                        className={`w-full rounded-xl border bg-bg py-[13px] pl-10 pr-3 font-display text-sm text-text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 [color-scheme:light] dark:[color-scheme:dark] lg:py-3.5 lg:pl-11 lg:text-base ${
+                        className={`peer w-full rounded-xl border bg-bg py-[13px] pl-10 pr-3 font-display text-sm text-text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 [color-scheme:light] dark:[color-scheme:dark] lg:py-3.5 lg:pl-11 lg:text-base ${
                           errors.tanggalAmbil ? "border-red" : "border-surface-border"
                         }`}
                       />
@@ -376,10 +416,10 @@ export default function BookingFormPage() {
                     >
                       Tanggal Kembali
                     </label>
-                    <div className="relative">
+                    <div className="relative rounded-xl transition focus-within:ring-2 focus-within:ring-accent/30">
                       <CalendarDays
                         size={16}
-                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary lg:left-4"
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4"
                       />
                       <input
                         id="tanggalKembali"
@@ -390,7 +430,7 @@ export default function BookingFormPage() {
                           clearError("tanggalKembali");
                         }}
                         min={tanggalAmbil || today}
-                        className={`w-full rounded-xl border bg-bg py-[13px] pl-10 pr-3 font-display text-sm text-text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 [color-scheme:light] dark:[color-scheme:dark] lg:py-3.5 lg:pl-11 lg:text-base ${
+                        className={`peer w-full rounded-xl border bg-bg py-[13px] pl-10 pr-3 font-display text-sm text-text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 [color-scheme:light] dark:[color-scheme:dark] lg:py-3.5 lg:pl-11 lg:text-base ${
                           errors.tanggalKembali
                             ? "border-red"
                             : "border-surface-border"
@@ -455,10 +495,10 @@ export default function BookingFormPage() {
                     >
                       Nama Lengkap <span className="text-red">*</span>
                     </label>
-                    <div className="relative">
+                    <div className="relative rounded-xl transition focus-within:ring-2 focus-within:ring-accent/30">
                       <User
                         size={16}
-                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary lg:left-4"
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4"
                       />
                       <input
                         id="nama"
@@ -469,7 +509,7 @@ export default function BookingFormPage() {
                           clearError("nama");
                         }}
                         placeholder="Masukkan nama lengkap"
-                        className={`w-full rounded-xl border bg-bg py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-2 focus:ring-accent/20 lg:py-3.5 lg:pl-11 lg:text-base ${
+                        className={`peer w-full rounded-xl border bg-bg py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-2 focus:ring-accent/20 lg:py-3.5 lg:pl-11 lg:text-base ${
                           errors.nama ? "border-red" : "border-surface-border"
                         }`}
                       />
@@ -486,10 +526,10 @@ export default function BookingFormPage() {
                     >
                       No HP <span className="text-red">*</span>
                     </label>
-                    <div className="relative">
+                    <div className="relative rounded-xl transition focus-within:ring-2 focus-within:ring-accent/30">
                       <Phone
                         size={16}
-                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary lg:left-4"
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4"
                       />
                       <input
                         id="noHp"
@@ -500,7 +540,7 @@ export default function BookingFormPage() {
                           clearError("noHp");
                         }}
                         placeholder="08xxxxxxxxxx"
-                        className={`w-full rounded-xl border bg-bg py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-2 focus:ring-accent/20 lg:py-3.5 lg:pl-11 lg:text-base ${
+                        className={`peer w-full rounded-xl border bg-bg py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-2 focus:ring-accent/20 lg:py-3.5 lg:pl-11 lg:text-base ${
                           errors.noHp ? "border-red" : "border-surface-border"
                         }`}
                       />
@@ -519,10 +559,10 @@ export default function BookingFormPage() {
                     Catatan
                     <span className="ml-1 text-xs font-normal text-text-secondary">(opsional)</span>
                   </label>
-                  <div className="relative">
+                  <div className="relative rounded-xl transition focus-within:ring-2 focus-within:ring-accent/30">
                     <FileText
                       size={16}
-                      className="pointer-events-none absolute left-3.5 top-3.5 shrink-0 text-text-secondary lg:left-4 lg:top-4"
+                      className="pointer-events-none absolute left-3.5 top-3.5 shrink-0 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4 lg:top-4"
                     />
                     <textarea
                       id="catatan"
@@ -530,7 +570,7 @@ export default function BookingFormPage() {
                       value={catatan}
                       onChange={(e) => setCatatan(e.target.value)}
                       placeholder="Catatan tambahan (misal: request waktu ambil)"
-                      className="w-full resize-none rounded-xl border border-surface-border bg-bg py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-2 focus:ring-accent/20 lg:py-3.5 lg:pl-11 lg:text-base"
+                      className="peer w-full resize-none rounded-xl border border-surface-border bg-bg py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-2 focus:ring-accent/20 lg:py-3.5 lg:pl-11 lg:text-base"
                     />
                   </div>
                 </div>
@@ -643,9 +683,7 @@ export default function BookingFormPage() {
                               <span className="font-display text-sm text-text-secondary">
                                 {formatPrice(equipment.pricePerDay)} × {days} hari
                               </span>
-                              <span className="font-display text-sm font-semibold text-text-primary">
-                                {formatPrice(total)}
-                              </span>
+                              <AnimatedPrice value={total} className="font-display text-sm font-semibold text-text-primary" />
                             </div>
                           </div>
 
@@ -660,7 +698,7 @@ export default function BookingFormPage() {
                               Total
                             </span>
                             <span className="font-display text-2xl font-bold text-accent">
-                              {formatPrice(total)}
+                              <AnimatedPrice value={total} />
                             </span>
                           </div>
 
@@ -707,7 +745,7 @@ export default function BookingFormPage() {
               <div>
                 <p className="font-display text-xs text-text-secondary">Total Sewa</p>
                 <p className="font-display text-xl font-bold text-accent">
-                  {hasDates ? formatPrice(total) : "\u2014"}
+                  {hasDates ? <AnimatedPrice value={total} /> : "\u2014"}
                 </p>
                 {hasDates && (
                   <p className="font-display text-[11px] text-text-secondary">

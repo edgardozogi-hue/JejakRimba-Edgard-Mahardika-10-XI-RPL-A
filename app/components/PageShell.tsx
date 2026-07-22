@@ -1,6 +1,7 @@
 import Navbar from "./Navbar";
 import BottomNav from "./BottomNav";
 import PageTransition from "./PageTransition";
+import Footer from "./Footer";
 
 export default function PageShell({
   children,
@@ -15,6 +16,7 @@ export default function PageShell({
       <PageTransition>
         <main className={showNav ? "pb-24 md:pb-8" : ""}>{children}</main>
       </PageTransition>
+      <Footer />
       {showNav && <BottomNav />}
     </div>
   );
