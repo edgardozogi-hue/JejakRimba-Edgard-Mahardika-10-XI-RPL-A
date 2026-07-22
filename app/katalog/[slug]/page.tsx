@@ -23,6 +23,7 @@ import {
 } from "../../lib/animations";
 import PageShell from "../../components/PageShell";
 import StarRating from "../../components/StarRating";
+import RatingForm from "../../components/RatingForm";
 
 const MAX_STOCK = 15;
 
@@ -341,6 +342,11 @@ export default function DetailAlatPage() {
               </motion.div>
             </div>
           </motion.div>
+
+          {/* Rating & Testimoni */}
+          <div className="mt-12">
+            <RatingForm equipmentId={item.id} />
+          </div>
         </div>
       </section>
     </PageShell>
