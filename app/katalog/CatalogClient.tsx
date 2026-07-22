@@ -33,8 +33,8 @@ function TiltCard({ children }: { children: React.ReactNode }) {
   const rotateX = useTransform(y, [0, 1], [8, -8]);
   const rotateY = useTransform(x, [0, 1], [-8, 8]);
 
-  const springRotateX = useSpring(rotateX, { stiffness: 200, damping: 25 });
-  const springRotateY = useSpring(rotateY, { stiffness: 200, damping: 25 });
+  const springRotateX = useSpring(rotateX, { stiffness: 180, damping: 28 });
+  const springRotateY = useSpring(rotateY, { stiffness: 180, damping: 28 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -56,6 +56,7 @@ function TiltCard({ children }: { children: React.ReactNode }) {
         rotateX: springRotateX,
         rotateY: springRotateY,
         transformPerspective: 800,
+        willChange: "transform",
       }}
     >
       {children}

@@ -19,6 +19,7 @@ export default function PageTransition({
         initial="initial"
         animate="animate"
         exit="exit"
+        style={{ willChange: "transform, opacity" }}
       >
         {children}
       </motion.div>
