@@ -12,6 +12,7 @@ import {
 import { Search, MapPin, ArrowLeft, SearchX } from "lucide-react";
 import { Equipment } from "../lib/data";
 import { staggerContainer, spring, fadeUp } from "../lib/animations";
+import StarRating from "../components/StarRating";
 
 const categoryImages: Record<string, string> = {
   Tenda: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&q=80",
@@ -247,6 +248,12 @@ export default function CatalogClient({
                             {" "}/hari
                           </span>
                         </p>
+                        <div className="flex items-center gap-1.5">
+                          <StarRating rating={item.rating} size={12} />
+                          <span className="font-mono text-[11px] text-text-secondary">
+                            ({item.reviewCount})
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </Link>

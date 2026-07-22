@@ -22,6 +22,7 @@ import {
   springSnappy,
 } from "../../lib/animations";
 import PageShell from "../../components/PageShell";
+import StarRating from "../../components/StarRating";
 
 const MAX_STOCK = 15;
 
@@ -279,6 +280,14 @@ export default function DetailAlatPage() {
               {/* Stock badge */}
               <motion.div variants={fadeUp}>
                 <StockBadge stock={item.stock} />
+              </motion.div>
+
+              {/* Rating */}
+              <motion.div variants={fadeUp} className="flex items-center gap-2">
+                <StarRating rating={item.rating} size={16} />
+                <span className="font-display text-sm text-text-secondary">
+                  {item.rating} ({item.reviewCount} ulasan)
+                </span>
               </motion.div>
 
               {/* Info cards grid */}
