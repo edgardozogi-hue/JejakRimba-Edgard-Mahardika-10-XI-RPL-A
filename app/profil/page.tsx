@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -9,76 +9,61 @@ import {
   UserPlus,
   Mountain,
   Package,
+  Store,
   ClipboardList,
   Settings,
   ChevronRight,
+  Repeat,
   LogOut,
+  Sparkles,
 } from "lucide-react";
 import PageShell from "../components/PageShell";
 import { supabase } from "../lib/supabase";
-import { staggerContainer, fadeUp, blurReveal, spring, scaleIn } from "../lib/animations";
+import { getProfileOverview, type ProfileOverview } from "../actions/auth";
+import { staggerContainer, fadeUp, blurReveal, scaleIn } from "../lib/animations";
 
-const links = [
-  {
-    href: "/booking",
-    icon: ClipboardList,
-    label: "Booking Saya",
-    desc: "Lihat riwayat dan status sewa",
-  },
-  {
-    href: "/profil/dashboard-vendor",
-    icon: Package,
-    label: "Dashboard Vendor",
-    desc: "Kelola alat dan booking masuk",
-  },
-  {
-    href: "/profil/pengaturan",
-    icon: Settings,
-    label: "Pengaturan",
-    desc: "Ubah profil dan preferensi",
-  },
-];
+type ActiveMode = "renter" | "vendor";
 
 export default function ProfilPage() {
-  const [user, setUser] = useState<{
-    name: string;
-    email: string;
-    role: string;
-    createdAt: Date | null;
-  } | null>(null);
+  const [overview, setOverview] = useState<ProfileOverview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mode, setMode] = useState<ActiveMode>("renter");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    let active = true;
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!active) return;
       if (data.user) {
-        const meta = data.user.user_metadata;
-        setUser({
-          name:
-            meta?.full_name ?? meta?.name ?? data.user.email?.split("@")[0] ?? "User",
-          email: data.user.email ?? "",
-          role: meta?.role ?? "Penyewa",
-          createdAt: data.user.created_at ? new Date(data.user.created_at) : null,
-        });
+        const res = await getProfileOverview();
+        if (active) {
+          setOverview(res);
+          // Default mode: vendor kalau dia punya toko, selain itu renter
+          if (res.vendor) setMode("vendor");
+        }
+      } else {
+        setOverview({ user: null, profileRole: null, vendor: null, error: null });
       }
-      setLoading(false);
+      if (active) setLoading(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
       if (session?.user) {
-        const meta = session.user.user_metadata;
-        setUser({
-          name:
-            meta?.full_name ?? meta?.name ?? session.user.email?.split("@")[0] ?? "User",
-          email: session.user.email ?? "",
-          role: meta?.role ?? "Penyewa",
-          createdAt: session.user.created_at ? new Date(session.user.created_at) : null,
+        getProfileOverview().then((res) => {
+          if (active) {
+            setOverview(res);
+            if (res.vendor) setMode("vendor");
+          }
         });
       } else {
-        setUser(null);
+        setOverview({ user: null, profileRole: null, vendor: null, error: null });
       }
     });
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   async function handleLogout() {
@@ -99,226 +84,185 @@ export default function ProfilPage() {
     );
   }
 
-  // ── Logged in ──
-  if (user) {
-    const initial = user.name.charAt(0).toUpperCase();
-
-    // ── Mobile Layout (< md) ──
-    const mobileView = (
-      <div className="md:hidden">
-        <motion.div
-          className="mx-auto max-w-md px-6 py-8"
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-        >
-          {/* Profile header */}
-          <motion.div variants={staggerContainer} className="flex items-center gap-4">
-            <motion.span
-              variants={scaleIn}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-2xl font-bold text-paper"
-            >
-              {initial}
-            </motion.span>
-            <motion.div variants={fadeUp}>
-              <h1 className="font-display text-xl font-bold text-text-primary">
-                {user.name}
-              </h1>
-              <p className="mt-0.5 text-sm text-text-secondary">{user.email}</p>
-            </motion.div>
-          </motion.div>
-
-          {/* Menu links */}
-          <motion.div variants={staggerContainer} className="mt-8 space-y-2">
-            {links.map((link) => (
-              <MenuLink key={link.href} {...link} showChevron />
-            ))}
-          </motion.div>
-
-          {/* Logout */}
-          <motion.button
-            variants={fadeUp}
-            onClick={handleLogout}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            transition={spring}
-            className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface px-6 py-3 text-sm font-semibold text-text-secondary transition hover:border-red-400 hover:text-red-500"
-          >
-            <LogOut size={18} />
-            Keluar
-          </motion.button>
-        </motion.div>
-      </div>
-    );
-
-    // ── Desktop Layout (≥ md) ──
-    const desktopView = (
-      <div className="hidden md:block">
-        <motion.div
-          className="mx-auto max-w-4xl px-8 py-10"
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-        >
-          <div className="overflow-hidden rounded-2xl border border-surface-border md:grid md:grid-cols-[30%_1fr] md:gap-0">
-            {/* Left column — profile sidebar */}
-            <div className="flex flex-col items-center border-surface-border bg-surface px-6 py-10 text-center md:border-r">
-              <motion.span
-                variants={scaleIn}
-                className="flex h-24 w-24 items-center justify-center rounded-full bg-accent text-4xl font-bold text-paper"
-              >
-                {initial}
-              </motion.span>
-              <motion.div variants={fadeUp} className="mt-5">
-                <h1 className="font-display text-xl font-bold text-text-primary">
-                  {user.name}
-                </h1>
-                <p className="mt-1 text-sm text-text-secondary">{user.email}</p>
-              </motion.div>
-
-              {/* Role badge */}
-              <motion.span
-                variants={scaleIn}
-                className="mt-4 inline-flex items-center rounded-full bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent"
-              >
-                {user.role}
-              </motion.span>
-
-              {/* Stats */}
-              <motion.div variants={fadeUp} className="mt-8 flex flex-col items-center gap-3">
-                <div className="text-center">
-                  <p className="font-mono text-xl font-bold text-text-primary">0</p>
-                  <p className="text-xs text-text-secondary">Total Booking</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-mono text-xs text-text-secondary">
-                    Bergabung sejak {user.createdAt?.getFullYear() ?? 2026}
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Right column — menu + logout */}
-            <div className="flex flex-col px-6 py-8">
-              <motion.div variants={staggerContainer} className="space-y-2">
-                {links.map((link) => (
-                  <MenuLink key={link.href} {...link} showChevron={false} />
-                ))}
-              </motion.div>
-
-              <motion.button
-                variants={fadeUp}
-                onClick={handleLogout}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                transition={spring}
-                className="mt-auto flex w-full items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface px-6 py-3 text-sm font-semibold text-text-secondary transition hover:border-red-400 hover:text-red-500"
-              >
-                <LogOut size={18} />
-                Keluar
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    );
-
-    return (
-      <PageShell>
-        {mobileView}
-        {desktopView}
-      </PageShell>
-    );
-  }
+  const user = overview?.user;
 
   // ── Not logged in ──
-  return (
-    <PageShell>
-      <motion.div
-        className="mx-auto max-w-md px-6 py-16 text-center md:max-w-lg"
-        initial="hidden"
-        animate="visible"
-        variants={staggerContainer}
-      >
-        {/* Icon */}
+  if (!user) {
+    return (
+      <PageShell>
         <motion.div
-          variants={scaleIn}
-          className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-bg-elevated"
+          className="mx-auto max-w-md px-6 py-16 text-center md:max-w-lg"
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
         >
-          <UserCircle size={40} className="text-text-secondary" />
-        </motion.div>
-
-        <motion.h1
-          variants={fadeUp}
-          className="font-display text-2xl font-bold text-text-primary"
-        >
-          Kamu belum masuk
-        </motion.h1>
-        <motion.p
-          variants={fadeUp}
-          className="mt-2 text-sm text-text-secondary"
-        >
-          Masuk atau buat akun buat akses profil, booking, dan dashboard sesuai
-          peran kamu.
-        </motion.p>
-
-        {/* CTA buttons */}
-        <motion.div variants={fadeUp} className="mt-8 flex flex-col gap-3 sm:flex-row">
           <motion.div
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            transition={spring}
+            variants={scaleIn}
+            className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-bg-elevated"
           >
+            <UserCircle size={40} className="text-text-secondary" />
+          </motion.div>
+          <motion.h1 variants={fadeUp} className="font-display text-2xl font-bold text-text-primary">
+            Kamu belum masuk
+          </motion.h1>
+          <motion.p variants={fadeUp} className="mt-2 text-sm text-text-secondary">
+            Masuk atau buat akun buat akses profil, booking, dan dashboard sesuai peran kamu.
+          </motion.p>
+          <motion.div variants={fadeUp} className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/masuk"
               className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-paper transition hover:bg-accent-hover"
             >
-              <LogIn size={18} />
-              Masuk
+              <LogIn size={18} /> Masuk
             </Link>
-          </motion.div>
-          <motion.div
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            transition={spring}
-          >
             <Link
               href="/daftar"
               className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface px-6 py-3 text-sm font-semibold text-text-primary transition hover:border-accent"
             >
-              <UserPlus size={18} />
-              Daftar
+              <UserPlus size={18} /> Daftar
             </Link>
           </motion.div>
         </motion.div>
+      </PageShell>
+    );
+  }
 
-        {/* Benefits */}
-        <motion.div variants={staggerContainer} className="mt-12 space-y-3 text-left">
-          <motion.div
-            variants={fadeUp}
-            className="flex items-start gap-3 rounded-2xl border border-surface-border bg-surface p-4"
-          >
-            <Mountain size={18} className="mt-0.5 shrink-0 text-accent" />
-            <div>
-              <p className="text-sm font-semibold text-text-primary">Penyewa</p>
-              <p className="mt-0.5 text-xs text-text-secondary">
-                Kelola booking, cek status sewa, dan kasih ulasan.
-              </p>
-            </div>
-          </motion.div>
-          <motion.div
-            variants={fadeUp}
-            className="flex items-start gap-3 rounded-2xl border border-surface-border bg-surface p-4"
-          >
-            <UserPlus size={18} className="mt-0.5 shrink-0 text-accent" />
-            <div>
-              <p className="text-sm font-semibold text-text-primary">Vendor</p>
-              <p className="mt-0.5 text-xs text-text-secondary">
-                Kelola alat, lihat booking masuk, dan atur ketersediaan.
-              </p>
-            </div>
-          </motion.div>
+  const name = user.full_name || user.email.split("@")[0] || "User";
+  const initial = name.charAt(0).toUpperCase();
+  const hasVendor = !!overview?.vendor;
+  const effectiveMode: ActiveMode = hasVendor && mode === "vendor" ? "vendor" : "renter";
+  const profileRole = overview?.profileRole;
+
+  // Menu sesuai role aktif
+  const menuLinks =
+    effectiveMode === "vendor" && hasVendor
+      ? [
+          {
+            href: "/profil/dashboard-vendor",
+            icon: Package,
+            label: "Dashboard Vendor",
+            desc: "Kelola alat dan booking masuk",
+            highlight: true,
+          },
+          { href: "/booking", icon: ClipboardList, label: "Booking Saya", desc: "Lihat riwayat dan status sewa" },
+          { href: "/profil/pengaturan", icon: Settings, label: "Pengaturan", desc: "Ubah profil dan preferensi" },
+        ]
+      : [
+          { href: "/booking", icon: ClipboardList, label: "Booking Saya", desc: "Lihat riwayat dan status sewa" },
+          ...(hasVendor
+            ? [{ href: "/profil/dashboard-vendor", icon: Store, label: "Buka Toko Saya", desc: "Kelola sebagai vendor", highlight: true }]
+            : []),
+          { href: "/profil/pengaturan", icon: Settings, label: "Pengaturan", desc: "Ubah profil dan preferensi" },
+        ];
+
+  const profileHeader = (
+    <motion.div variants={fadeUp} className="mt-8 md:mt-0">
+      <div className="flex items-center gap-4">
+        <motion.span
+          variants={scaleIn}
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-2xl font-bold text-paper md:h-24 md:w-24 md:text-4xl"
+        >
+          {initial}
+        </motion.span>
+        <motion.div variants={fadeUp}>
+          <h1 className="font-display text-xl font-bold text-text-primary md:text-2xl">{name}</h1>
+          <p className="mt-0.5 text-sm text-text-secondary">{user.email}</p>
+          <div className="mt-2 flex items-center gap-2">
+            <span
+              className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                effectiveMode === "vendor"
+                  ? "bg-accent/15 text-accent"
+                  : "bg-bg-elevated text-text-secondary"
+              }`}
+            >
+              {effectiveMode === "vendor" ? <Store size={12} className="mr-1" /> : <Mountain size={12} className="mr-1" />}
+              {effectiveMode === "vendor" ? "Vendor" : "Penyewa"}
+            </span>
+            {profileRole ? (
+              <span className="rounded-full bg-bg-elevated px-3 py-1 text-xs text-text-secondary">
+                terdaftar: {profileRole === "vendor" ? "Vendor" : "Penyewa"}
+              </span>
+            ) : null}
+          </div>
         </motion.div>
+      </div>
+    </motion.div>
+  );
+
+  // Toggle role aktif (muncul hanya kalau punya toko vendor)
+  const roleToggle = hasVendor ? (
+    <motion.div
+      variants={fadeUp}
+      className="mt-6 flex items-center justify-between rounded-2xl border border-surface-border bg-surface p-3"
+    >
+      <div className="flex items-center gap-2 text-sm font-semibold text-text-primary">
+        <Repeat size={16} className="text-accent" />
+        Mode aktif
+      </div>
+      <div className="flex rounded-xl bg-bg-elevated p-1">
+        <button
+          onClick={() => setMode("renter")}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+            mode === "renter" ? "bg-accent text-paper" : "text-text-secondary hover:text-text-primary"
+          }`}
+        >
+          <Mountain size={12} /> Penyewa
+        </button>
+        <button
+          onClick={() => setMode("vendor")}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+            mode === "vendor" ? "bg-accent text-paper" : "text-text-secondary hover:text-text-primary"
+          }`}
+        >
+          <Store size={12} /> Vendor
+        </button>
+      </div>
+    </motion.div>
+  ) : null;
+
+  // Info bisnis vendor (mode vendor)
+  const vendorInfo = effectiveMode === "vendor" && overview?.vendor ? (
+    <motion.div variants={fadeUp} className="mt-6 rounded-2xl border border-surface-border bg-surface p-4">
+      <div className="flex items-center gap-2">
+        <Store size={16} className="text-accent" />
+        <p className="text-sm font-semibold text-text-primary">Toko kamu</p>
+      </div>
+      <p className="mt-2 font-display text-base font-bold text-text-primary">
+        {overview.vendor.business_name ?? "Usaha Tanpa Nama"}
+      </p>
+      {overview.vendor.description && (
+        <p className="mt-1 text-xs text-text-secondary">{overview.vendor.description}</p>
+      )}
+      <div className="mt-2 space-y-0.5 text-xs text-text-secondary">
+        {overview.vendor.address && <p>{overview.vendor.address}{overview.vendor.city ? `, ${overview.vendor.city}` : ""}</p>}
+        {overview.vendor.whatsapp_number && <p>WhatsApp: {overview.vendor.whatsapp_number}</p>}
+      </div>
+    </motion.div>
+  ) : null;
+
+  return (
+    <PageShell>
+      <motion.div className="mx-auto max-w-4xl px-6 py-10" initial="hidden" animate="visible" variants={staggerContainer}>
+        {profileHeader}
+        {roleToggle}
+        {vendorInfo}
+
+      <motion.div variants={staggerContainer} className="mt-8 space-y-2">
+        <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.25em] text-text-secondary">
+          {effectiveMode === "vendor" ? "Menu Vendor" : "Menu Penyewa"}
+        </p>
+        {menuLinks.map((link) => (
+          <MenuLink key={link.href} {...link} showChevron />
+        ))}
+      </motion.div>
+
+      <motion.button
+        variants={fadeUp}
+        onClick={handleLogout}
+        className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-surface-border bg-surface px-6 py-3 text-sm font-semibold text-text-secondary transition hover:border-red-400 hover:text-red-500"
+      >
+        <LogOut size={18} /> Keluar
+      </motion.button>
       </motion.div>
     </PageShell>
   );
@@ -331,36 +275,35 @@ function MenuLink({
   label,
   desc,
   showChevron = true,
+  highlight,
 }: {
   href: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
   desc: string;
   showChevron?: boolean;
+  highlight?: boolean;
 }) {
   return (
     <motion.div variants={blurReveal}>
-      <motion.div
-        whileHover={showChevron ? { scale: 1.02, x: 6 } : { x: 8 }}
-        whileTap={{ scale: 0.98 }}
-        transition={spring}
+      <Link
+        href={href}
+        className={`flex items-center gap-3 rounded-2xl border p-4 transition ${
+          highlight ? "border-accent/30 bg-accent/5 hover:border-accent" : "border-surface-border bg-surface hover:border-accent"
+        }`}
       >
-        <Link
-          href={href}
-          className="flex items-center gap-3 rounded-2xl border border-surface-border bg-surface p-4 transition hover:border-accent"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
-            <Icon size={20} className="text-accent" />
-          </div>
-          <div className="flex-1">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${highlight ? "bg-accent/15" : "bg-accent/10"}`}>
+          <Icon size={20} className="text-accent" />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
             <p className="text-sm font-semibold text-text-primary">{label}</p>
-            <p className="mt-0.5 text-xs text-text-secondary">{desc}</p>
+            {highlight && <Sparkles size={12} className="text-accent" />}
           </div>
-          {showChevron && (
-            <ChevronRight size={18} className="shrink-0 text-text-secondary" />
-          )}
-        </Link>
-      </motion.div>
+          <p className="mt-0.5 text-xs text-text-secondary">{desc}</p>
+        </div>
+        {showChevron && <ChevronRight size={18} className="shrink-0 text-text-secondary" />}
+      </Link>
     </motion.div>
   );
 }

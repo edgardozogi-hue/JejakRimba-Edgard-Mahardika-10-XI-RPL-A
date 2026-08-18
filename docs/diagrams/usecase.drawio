@@ -1,0 +1,51 @@
+<mxfile host="app.diagrams.net" modified="2026-01-01T00:00:00.000Z" agent="jejak-rimba-prd" version="24.0.0" type="device">
+  <diagram id="root" name="Page-1">root</diagram>
+<diagram id="uc1" name="Use Case">
+      <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="1100" math="0" shadow="0">
+        <root>
+          <mxCell id="0"/>
+          <mxCell id="1" parent="0"/>
+<mxCell id="A_peng" parent="1" vertex="1" value="Pengunjung" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fontSize=13;fillColor=#f5f5f5;strokeColor=#666666;"><mxGeometry x="40" y="40" width="140" height="60" as="geometry"/></mxCell>
+<mxCell id="A_penyewa" parent="1" vertex="1" value="Penyewa" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fontSize=13;fillColor=#f5f5f5;strokeColor=#666666;"><mxGeometry x="40" y="260" width="140" height="60" as="geometry"/></mxCell>
+<mxCell id="A_vendor" parent="1" vertex="1" value="Vendor" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fontSize=13;fillColor=#f5f5f5;strokeColor=#666666;"><mxGeometry x="900" y="40" width="140" height="60" as="geometry"/></mxCell>
+<mxCell id="A_mid" parent="1" vertex="1" value="Midtrans (eksternal)" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fontSize=13;fillColor=#f5f5f5;strokeColor=#666666;"><mxGeometry x="900" y="300" width="160" height="60" as="geometry"/></mxCell>
+<mxCell id="UC0" parent="1" vertex="1" value="Lihat Katalog" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="40" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC1" parent="1" vertex="1" value="Cari &amp; Filter Alat" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="90" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC2" parent="1" vertex="1" value="Lihat Detail &amp; Ulasan" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="140" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC3" parent="1" vertex="1" value="Daftar / Registrasi" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="190" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC4" parent="1" vertex="1" value="Masuk (Login)" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="240" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC5" parent="1" vertex="1" value="Pesan Alat" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="290" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC6" parent="1" vertex="1" value="Pilih Tanggal Sewa" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="340" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC7" parent="1" vertex="1" value="Bayar via Midtrans" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="390" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC8" parent="1" vertex="1" value="Lihat Booking Saya" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="440" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC9" parent="1" vertex="1" value="Batalkan Booking" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="490" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC10" parent="1" vertex="1" value="Beri Ulasan" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="540" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC11" parent="1" vertex="1" value="Kelola Profil" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="590" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC12" parent="1" vertex="1" value="Kelola Katalog (CRUD Alat)*" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="640" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC13" parent="1" vertex="1" value="Tambah Alat Baru*" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="690" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC14" parent="1" vertex="1" value="Lihat &amp; Konfirmasi Booking" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="740" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="UC15" parent="1" vertex="1" value="Update Status Booking" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;"><mxGeometry x="300" y="790" width="240" height="32" as="geometry"/></mxCell>
+<mxCell id="uc_e1" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_peng" target="UC0"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e2" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_peng" target="UC1"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e3" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_peng" target="UC2"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e4" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_penyewa" target="UC3"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e5" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_penyewa" target="UC4"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e6" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_penyewa" target="UC5"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e7" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_penyewa" target="UC6"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e8" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_penyewa" target="UC7"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e9" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_penyewa" target="UC8"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e10" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_penyewa" target="UC9"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e11" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_penyewa" target="UC10"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e12" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_penyewa" target="UC11"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e13" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_vendor" target="UC12"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e14" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_vendor" target="UC13"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e15" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_vendor" target="UC14"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e16" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_vendor" target="UC15"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e17" style="endArrow=open;dashed=1;strokeColor=#9673a6;html=1;" value="extends" edge="1" parent="1" source="UC5" target="UC0"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e18" style="endArrow=open;dashed=1;strokeColor=#9673a6;html=1;" value="include" edge="1" parent="1" source="UC3" target="UC4"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_e19" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="A_mid" target="UC7"><mxGeometry relative="1" as="geometry"/></mxCell>
+<mxCell id="uc_note" parent="1" vertex="1" value="* = fitur target/rencana (belum ada action di kode)" style="text;whiteSpace=wrap;html=1;fontSize=11;fontStyle=2;align=left;"><mxGeometry x="900" y="420" width="300" height="30" as="geometry"/></mxCell>
+        </root>
+      </mxGraphModel>
+    </diagram>
+</mxfile>

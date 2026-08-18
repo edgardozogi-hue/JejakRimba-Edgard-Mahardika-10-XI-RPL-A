@@ -3,12 +3,12 @@
 @import "@fontsource/archivo/500.css";
 @import "@fontsource/archivo/600.css";
 @import "@fontsource/archivo/700.css";
-@import "@fontsource/jetbrains-mono/400.css";
-@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/archivo/800.css";
+@import "@fontsource/archivo/900.css";
 
 :root {
-  --bark: #1a1714;
-  --bark-2: #23201b;
+  --bark: #121417;
+  --bark-2: #1a1c21;
   --moss: #4a5d3a;
   --moss-light: #6b8354;
   --ember: #c4622d;
@@ -16,16 +16,18 @@
   --stone: #8b8378;
   --paper: #ede6d6;
   --paper-dim: #d9d0bc;
+  --sage: #6b8f5e;
+  --sage-light: #8caf7a;
 }
 
 :root,
 .light {
-  --bg: var(--paper);
-  --bg-elevated: #f5f1e8;
+  --bg: #faf9f6;
+  --bg-elevated: #f5f3ef;
   --surface: #ffffff;
-  --surface-border: rgba(26, 23, 20, 0.12);
-  --text-primary: var(--bark);
-  --text-secondary: var(--stone);
+  --surface-border: rgba(26, 23, 20, 0.06);
+  --text-primary: #1a1714;
+  --text-secondary: #7a7368;
   --accent: var(--ember);
   --accent-hover: var(--ember-light);
   --accent-secondary: var(--moss);
@@ -35,28 +37,28 @@
 .dark {
   --bg: var(--bark);
   --bg-elevated: var(--bark-2);
-  --surface: #2a2620;
-  --surface-border: rgba(237, 230, 214, 0.12);
-  --text-primary: var(--paper);
-  --text-secondary: #a8a096;
+  --surface: #1e2025;
+  --surface-border: rgba(255, 255, 255, 0.06);
+  --text-primary: #e8e6e1;
+  --text-secondary: #8b8f96;
   --accent: var(--ember-light);
   --accent-hover: var(--ember);
   --accent-secondary: var(--moss-light);
-  --nav-bg: rgba(26, 23, 20, 0.92);
+  --nav-bg: rgba(18, 20, 23, 0.95);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
     --bg: var(--bark);
     --bg-elevated: var(--bark-2);
-    --surface: #2a2620;
-    --surface-border: rgba(237, 230, 214, 0.12);
-    --text-primary: var(--paper);
-    --text-secondary: #a8a096;
+    --surface: #1e2025;
+    --surface-border: rgba(255, 255, 255, 0.06);
+    --text-primary: #e8e6e1;
+    --text-secondary: #8b8f96;
     --accent: var(--ember-light);
     --accent-hover: var(--ember);
     --accent-secondary: var(--moss-light);
-  --nav-bg: #1a1714;
+    --nav-bg: rgba(18, 20, 23, 0.95);
   }
 }
 
@@ -70,6 +72,8 @@
   --color-stone: var(--stone);
   --color-paper: var(--paper);
   --color-paper-dim: var(--paper-dim);
+  --color-sage: var(--sage);
+  --color-sage-light: var(--sage-light);
 
   /* Semantic tokens exposed to Tailwind (bg-*, text-*, border-* utilities) */
   --color-bg: var(--bg);
@@ -85,18 +89,13 @@
 
   --font-display: "Archivo", sans-serif;
   --font-sans: "Archivo", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-archivo: "Archivo", sans-serif;
+  --font-mono: "Archivo", sans-serif;
 }
 
 * {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
-}
-
-@media (hover: hover) {
-  .tilt-card {
-    will-change: transform;
-  }
 }
 
 body {
@@ -109,11 +108,28 @@ body {
 .contour-bg {
   background-color: var(--bark);
   background-image:
-    radial-gradient(circle at 20% 30%, transparent 0, transparent 40px, rgba(237, 230, 214, 0.035) 41px, rgba(237, 230, 214, 0.035) 42px, transparent 43px),
-    radial-gradient(circle at 20% 30%, transparent 0, transparent 90px, rgba(237, 230, 214, 0.035) 91px, rgba(237, 230, 214, 0.035) 92px, transparent 93px),
-    radial-gradient(circle at 20% 30%, transparent 0, transparent 140px, rgba(237, 230, 214, 0.035) 141px, rgba(237, 230, 214, 0.035) 142px, transparent 143px),
-    radial-gradient(circle at 78% 65%, transparent 0, transparent 60px, rgba(237, 230, 214, 0.03) 61px, rgba(237, 230, 214, 0.03) 62px, transparent 63px),
-    radial-gradient(circle at 78% 65%, transparent 0, transparent 110px, rgba(237, 230, 214, 0.03) 111px, rgba(237, 230, 214, 0.03) 112px, transparent 113px);
+    radial-gradient(circle at 20% 30%, transparent 0, transparent 40px, var(--paper) 41px, var(--paper) 42px, transparent 43px),
+    radial-gradient(circle at 20% 30%, transparent 0, transparent 90px, var(--paper) 91px, var(--paper) 92px, transparent 93px),
+    radial-gradient(circle at 20% 30%, transparent 0, transparent 150px, var(--paper) 151px, var(--paper) 152px, transparent 153px),
+    radial-gradient(circle at 78% 65%, transparent 0, transparent 55px, var(--paper) 56px, var(--paper) 57px, transparent 58px),
+    radial-gradient(circle at 78% 65%, transparent 0, transparent 110px, var(--paper) 111px, var(--paper) 112px, transparent 113px),
+    radial-gradient(circle at 78% 65%, transparent 0, transparent 175px, var(--paper) 176px, var(--paper) 177px, transparent 178px),
+    radial-gradient(circle at 45% 80%, transparent 0, transparent 70px, var(--paper) 71px, var(--paper) 72px, transparent 73px),
+    radial-gradient(circle at 45% 80%, transparent 0, transparent 140px, var(--paper) 141px, var(--paper) 142px, transparent 143px);
+}
+
+.contour-lines {
+  background-image:
+    radial-gradient(circle at 20% 30%, transparent 0, transparent 40px, var(--paper) 41px, var(--paper) 42px, transparent 43px),
+    radial-gradient(circle at 20% 30%, transparent 0, transparent 90px, var(--paper) 91px, var(--paper) 92px, transparent 93px),
+    radial-gradient(circle at 20% 30%, transparent 0, transparent 150px, var(--paper) 151px, var(--paper) 152px, transparent 153px),
+    radial-gradient(circle at 78% 65%, transparent 0, transparent 55px, var(--paper) 56px, var(--paper) 57px, transparent 58px),
+    radial-gradient(circle at 78% 65%, transparent 0, transparent 110px, var(--paper) 111px, var(--paper) 112px, transparent 113px),
+    radial-gradient(circle at 78% 65%, transparent 0, transparent 175px, var(--paper) 176px, var(--paper) 177px, transparent 178px),
+    radial-gradient(circle at 45% 80%, transparent 0, transparent 70px, var(--paper) 71px, var(--paper) 72px, transparent 73px),
+    radial-gradient(circle at 45% 80%, transparent 0, transparent 140px, var(--paper) 141px, var(--paper) 142px, transparent 143px);
+  opacity: 0.05;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -122,4 +138,68 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Native date picker: hide the default faded indicator but keep the whole
+   input tappable so the picker still opens on tap. */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Scrollbar styling for filter pills */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+.scrollbar-thumb-surface-border::-webkit-scrollbar-thumb {
+  background-color: var(--surface-border);
+  border-radius: 4px;
+}
+.scrollbar-track-transparent::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+/* Marquee — kontinu, tanpa box */
+.marquee-track {
+  animation: marquee 32s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Scrollbar styling for textareas */
+textarea {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-border) transparent;
+  resize: none;
+}
+textarea::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+textarea::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+textarea::-webkit-scrollbar-thumb {
+  background-color: var(--surface-border);
+  border-radius: 4px;
+}
+textarea:hover::-webkit-scrollbar-thumb {
+  background-color: var(--text-secondary);
 }

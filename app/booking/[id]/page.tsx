@@ -15,13 +15,16 @@ import {
   Building2,
   ChevronRight,
   Check,
-  Package,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { getEquipmentById } from "../../actions/equipment";
+import type { EquipmentFrontend } from "../../lib/database.types";
 import PageShell from "../../components/PageShell";
-import { equipmentList } from "../../lib/data";
-import { staggerContainer, fadeUp, spring } from "../../lib/animations";
+import { staggerContainer, fadeUp } from "../../lib/animations";
+import { useLanguage } from "../../lib/i18n";
+import { getProfileWithPrefs } from "../../actions/profile";
+import { RenterSwitchModal } from "../../components/profile/RenterSwitchModal";
 
 // ── Helpers ──
 
@@ -80,12 +83,13 @@ function AnimatedPrice({ value, className }: { value: number; className?: string
 // ── Booking Step Indicator ──
 
 const steps = [
-  { num: 1, label: "Tanggal" },
-  { num: 2, label: "Data" },
-  { num: 3, label: "Konfirmasi" },
+  { num: 1, labelKey: "booking.step_date" },
+  { num: 2, labelKey: "booking.step_data" },
+  { num: 3, labelKey: "booking.step_confirm" },
 ];
 
 function StepIndicator({ active }: { active: number }) {
+  const { t } = useLanguage();
   return (
     <div className="flex items-center justify-center gap-0">
       {steps.map((s, i) => (
@@ -127,7 +131,7 @@ function StepIndicator({ active }: { active: number }) {
                 s.num === active ? "text-accent" : "text-text-secondary"
               }`}
             >
-              {s.label}
+              {t(s.labelKey)}
             </span>
           </div>
 
@@ -157,11 +161,17 @@ function StepIndicator({ active }: { active: number }) {
 
 export default function BookingFormPage() {
   const params = useParams();
+  const { t } = useLanguage();
 
-  const equipment = useMemo(
-    () => equipmentList.find((e) => e.id === params.id),
-    [params.id],
-  );
+  const [equipment, setEquipment] = useState<EquipmentFrontend | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
+
+  useEffect(() => {
+    getEquipmentById(params.id as string).then((data) => {
+      setEquipment(data);
+      setPageLoading(false);
+    });
+  }, [params.id]);
 
   const today = getToday();
 
@@ -171,7 +181,14 @@ export default function BookingFormPage() {
   const [tanggalKembali, setTanggalKembali] = useState("");
   const [catatan, setCatatan] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [showRenterModal, setShowRenterModal] = useState(false);
+
+  useEffect(() => {
+    getProfileWithPrefs().then((res) => {
+      setUserRole(res.profile?.role ?? null);
+    });
+  }, []);
 
   const days = useMemo(
     () => calcDays(tanggalAmbil, tanggalKembali),
@@ -187,16 +204,16 @@ export default function BookingFormPage() {
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
-    if (!nama.trim()) errs.nama = "Nama lengkap wajib diisi";
-    if (!noHp.trim()) errs.noHp = "No HP wajib diisi";
-    if (!tanggalAmbil) errs.tanggalAmbil = "Tanggal ambil wajib diisi";
-    if (!tanggalKembali) errs.tanggalKembali = "Tanggal kembali wajib diisi";
+    if (!nama.trim()) errs.nama = t("booking.err_nama");
+    if (!noHp.trim()) errs.noHp = t("booking.err_hp");
+    if (!tanggalAmbil) errs.tanggalAmbil = t("booking.err_tgl_ambil");
+    if (!tanggalKembali) errs.tanggalKembali = t("booking.err_tgl_kembali");
     if (
       tanggalAmbil &&
       tanggalKembali &&
       new Date(tanggalKembali) < new Date(tanggalAmbil)
     ) {
-      errs.tanggalKembali = "Tanggal kembali harus setelah tanggal ambil";
+      errs.tanggalKembali = t("booking.err_tgl_urutan");
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -224,7 +241,7 @@ export default function BookingFormPage() {
 
   // ── Loading skeleton ──
 
-  if (loading) {
+  if (pageLoading) {
     return (
       <PageShell>
         <div className="mx-auto max-w-5xl px-6 py-8">
@@ -259,25 +276,21 @@ export default function BookingFormPage() {
               <AlertTriangle size={40} className="text-text-secondary" />
             </div>
             <h1 className="font-display text-2xl font-bold text-text-primary">
-              Alat Tidak Ditemukan
+              {t("booking.not_found_title")}
             </h1>
             <p className="mt-2 text-sm text-text-secondary">
-              Alat dengan ID &ldquo;{params.id}&rdquo; tidak ditemukan. Mungkin
-              sudah dihapus atau tautan tidak valid.
+              {t("booking.not_found_desc").replace("{id}", params.id as string)}
             </p>
           </motion.div>
 
           <motion.div variants={fadeUp} className="mt-8">
             <Link href="/katalog">
-              <motion.span
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                transition={spring}
+              <span
                 className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-paper transition hover:bg-accent-hover"
               >
                 <ArrowLeft size={18} />
-                Lihat Katalog
-              </motion.span>
+                {t("booking.lihat_katalog")}
+              </span>
             </Link>
           </motion.div>
         </motion.div>
@@ -304,19 +317,47 @@ export default function BookingFormPage() {
             className="mb-4 inline-flex items-center gap-1.5 font-display text-sm font-medium text-text-secondary transition hover:text-text-primary"
           >
             <ArrowLeft size={16} />
-            Kembali ke katalog
+            {t("booking.back_katalog")}
           </Link>
         </motion.div>
+
+        {/* ── Vendor → Renter alert ── */}
+        {userRole === "vendor" && (
+          <motion.div
+            variants={fadeUp}
+            className="mb-6 flex flex-col gap-3 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/15">
+                <AlertTriangle size={18} className="text-amber-400" />
+              </div>
+              <div>
+                <p className="font-display text-sm font-semibold text-text-primary">
+                  {t("booking.vendor_alert_title")}
+                </p>
+                <p className="mt-0.5 text-xs text-text-secondary">
+                  {t("booking.vendor_alert_desc")}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowRenterModal(true)}
+              className="shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-paper transition hover:bg-accent-hover"
+            >
+              {t("booking.vendor_alert_action")}
+            </button>
+          </motion.div>
+        )}
 
         {/* ── Header + Stepper row (desktop) ── */}
         <motion.div variants={fadeUp} className="mb-6 flex flex-col gap-4 lg:mb-8 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="font-display text-[11px] font-bold tracking-[0.15em] text-accent">BOOKING</p>
+            <p className="font-display text-[11px] font-bold tracking-[0.15em] text-accent">{t("booking.kicker_short")}</p>
             <h1 className="mt-0.5 font-display text-2xl font-bold text-text-primary lg:text-3xl">
-              Sewa Alat Camping
+              {t("booking.sewa_title")}
             </h1>
             <p className="mt-1 font-display text-sm text-text-secondary">
-              Isi data diri dan pilih tanggal sewa
+              {t("booking.sewa_desc")}
             </p>
           </div>
           <div className="rounded-2xl bg-surface px-6 py-4 shadow-sm ring-1 ring-black/5 dark:ring-white/10 lg:px-10">
@@ -336,10 +377,10 @@ export default function BookingFormPage() {
                 </div>
                 <div>
                   <h2 className="font-display text-base font-semibold text-text-primary lg:text-lg">
-                    Pilih Tanggal Sewa
+                    {t("booking.pilih_tanggal")}
                   </h2>
                   <p className="font-display text-xs text-text-secondary">
-                    Tentukan durasi peminjaman alat
+                    {t("booking.tentukan_durasi")}
                   </p>
                 </div>
               </div>
@@ -364,7 +405,7 @@ export default function BookingFormPage() {
                       </span>
                       <span className="font-display text-xs text-text-secondary lg:text-sm">
                         {formatPrice(equipment.pricePerDay)}
-                        <span className="text-[10px] lg:text-xs">/hari</span>
+                        <span className="text-[10px] lg:text-xs">{t("booking.per_hari")}</span>
                       </span>
                     </div>
                   </div>
@@ -372,7 +413,7 @@ export default function BookingFormPage() {
                   <div className="hidden shrink-0 lg:block">
                     <div className="rounded-lg border border-surface-border px-3 py-1.5 text-center">
                       <p className="font-display text-lg font-bold text-moss">{equipment.stock}</p>
-                      <p className="font-display text-[10px] text-text-secondary">Tersedia</p>
+                      <p className="font-display text-[10px] text-text-secondary">{t("common.available")}</p>
                     </div>
                   </div>
                 </div>
@@ -384,13 +425,12 @@ export default function BookingFormPage() {
                       htmlFor="tanggalAmbil"
                       className="mb-1.5 block font-display text-[13px] font-semibold text-text-primary lg:text-sm"
                     >
-                      Tanggal Ambil
-                    </label>
-                    <div className="relative rounded-xl transition focus-within:ring-2 focus-within:ring-accent/30">
-                      <CalendarDays
-                        size={16}
-                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4"
-                      />
+                      {t("booking.tanggal_ambil")}
+                    </label>                    <div
+                      className={`relative rounded-xl border bg-bg transition focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 ${
+                        errors.tanggalAmbil ? "border-red" : "border-surface-border"
+                      }`}
+                    >
                       <input
                         id="tanggalAmbil"
                         type="date"
@@ -400,9 +440,11 @@ export default function BookingFormPage() {
                           clearError("tanggalAmbil");
                         }}
                         min={today}
-                        className={`peer w-full rounded-xl border bg-bg py-[13px] pl-10 pr-3 font-display text-sm text-text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 [color-scheme:light] dark:[color-scheme:dark] lg:py-3.5 lg:pl-11 lg:text-base ${
-                          errors.tanggalAmbil ? "border-red" : "border-surface-border"
-                        }`}
+                        className="peer w-full rounded-xl border-0 bg-transparent py-[13px] pl-3 pr-10 font-display text-sm text-text-primary outline-none transition focus:outline-none focus:ring-0 [color-scheme:light] dark:[color-scheme:dark] lg:py-3.5 lg:pl-4 lg:pr-11 lg:text-base"
+                      />
+                      <CalendarDays
+                        size={16}
+                        className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:right-4"
                       />
                     </div>
                     {errors.tanggalAmbil && (
@@ -414,13 +456,15 @@ export default function BookingFormPage() {
                       htmlFor="tanggalKembali"
                       className="mb-1.5 block font-display text-[13px] font-semibold text-text-primary lg:text-sm"
                     >
-                      Tanggal Kembali
+                      {t("booking.tanggal_kembali")}
                     </label>
-                    <div className="relative rounded-xl transition focus-within:ring-2 focus-within:ring-accent/30">
-                      <CalendarDays
-                        size={16}
-                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4"
-                      />
+                    <div
+                      className={`relative rounded-xl border bg-bg transition focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 ${
+                        errors.tanggalKembali
+                          ? "border-red"
+                          : "border-surface-border"
+                      }`}
+                    >
                       <input
                         id="tanggalKembali"
                         type="date"
@@ -430,11 +474,11 @@ export default function BookingFormPage() {
                           clearError("tanggalKembali");
                         }}
                         min={tanggalAmbil || today}
-                        className={`peer w-full rounded-xl border bg-bg py-[13px] pl-10 pr-3 font-display text-sm text-text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 [color-scheme:light] dark:[color-scheme:dark] lg:py-3.5 lg:pl-11 lg:text-base ${
-                          errors.tanggalKembali
-                            ? "border-red"
-                            : "border-surface-border"
-                        }`}
+                        className="peer w-full rounded-xl border-0 bg-transparent py-[13px] pl-3 pr-10 font-display text-sm text-text-primary outline-none transition focus:outline-none focus:ring-0 [color-scheme:light] dark:[color-scheme:dark] lg:py-3.5 lg:pl-4 lg:pr-11 lg:text-base"
+                      />
+                      <CalendarDays
+                        size={16}
+                        className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:right-4"
                       />
                     </div>
                     {errors.tanggalKembali && (
@@ -457,8 +501,8 @@ export default function BookingFormPage() {
                           <Clock size={14} className="text-accent" />
                         </div>
                         <span className="font-display text-sm text-text-primary lg:text-base">
-                          Durasi sewa:{" "}
-                          <span className="font-bold text-accent">{days} hari</span>
+                          {t("booking.durasi_sewa")}{" "}
+                          <span className="font-bold text-accent">{days} {t("booking.hari")}</span>
                         </span>
                       </div>
                       <span className="font-display text-xs text-text-secondary lg:text-sm">
@@ -478,10 +522,10 @@ export default function BookingFormPage() {
                 </div>
                 <div>
                   <h2 className="font-display text-base font-semibold text-text-primary lg:text-lg">
-                    Data Penyewa
+                    {t("booking.data_penyewa")}
                   </h2>
                   <p className="font-display text-xs text-text-secondary">
-                    Informasi kontak peminjam
+                    {t("booking.info_kontak")}
                   </p>
                 </div>
               </div>
@@ -493,13 +537,13 @@ export default function BookingFormPage() {
                       htmlFor="nama"
                       className="mb-1.5 block font-display text-[13px] font-semibold text-text-primary lg:text-sm"
                     >
-                      Nama Lengkap <span className="text-red">*</span>
+                      {t("auth.nama_lengkap")} <span className="text-red">*</span>
                     </label>
-                    <div className="relative rounded-xl transition focus-within:ring-2 focus-within:ring-accent/30">
-                      <User
-                        size={16}
-                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4"
-                      />
+                    <div
+                      className={`relative rounded-xl border bg-bg transition focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 ${
+                        errors.nama ? "border-red" : "border-surface-border"
+                      }`}
+                    >
                       <input
                         id="nama"
                         type="text"
@@ -508,10 +552,12 @@ export default function BookingFormPage() {
                           setNama(e.target.value);
                           clearError("nama");
                         }}
-                        placeholder="Masukkan nama lengkap"
-                        className={`peer w-full rounded-xl border bg-bg py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-2 focus:ring-accent/20 lg:py-3.5 lg:pl-11 lg:text-base ${
-                          errors.nama ? "border-red" : "border-surface-border"
-                        }`}
+                        placeholder={t("auth.nama_lengkap_placeholder")}
+                        className="peer w-full rounded-xl border-0 bg-transparent py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:outline-none focus:ring-0 lg:py-3.5 lg:pl-11 lg:text-base"
+                      />
+                      <User
+                        size={16}
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4"
                       />
                     </div>
                     {errors.nama && (
@@ -524,13 +570,13 @@ export default function BookingFormPage() {
                       htmlFor="noHp"
                       className="mb-1.5 block font-display text-[13px] font-semibold text-text-primary lg:text-sm"
                     >
-                      No HP <span className="text-red">*</span>
+                      {t("booking.no_hp")} <span className="text-red">*</span>
                     </label>
-                    <div className="relative rounded-xl transition focus-within:ring-2 focus-within:ring-accent/30">
-                      <Phone
-                        size={16}
-                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4"
-                      />
+                    <div
+                      className={`relative rounded-xl border bg-bg transition focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 ${
+                        errors.noHp ? "border-red" : "border-surface-border"
+                      }`}
+                    >
                       <input
                         id="noHp"
                         type="tel"
@@ -539,10 +585,12 @@ export default function BookingFormPage() {
                           setNoHp(e.target.value);
                           clearError("noHp");
                         }}
-                        placeholder="08xxxxxxxxxx"
-                        className={`peer w-full rounded-xl border bg-bg py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-2 focus:ring-accent/20 lg:py-3.5 lg:pl-11 lg:text-base ${
-                          errors.noHp ? "border-red" : "border-surface-border"
-                        }`}
+                        placeholder={t("booking.hp_placeholder")}
+                        className="peer w-full rounded-xl border-0 bg-transparent py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:outline-none focus:ring-0 lg:py-3.5 lg:pl-11 lg:text-base"
+                      />
+                      <Phone
+                        size={16}
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4"
                       />
                     </div>
                     {errors.noHp && (
@@ -556,21 +604,21 @@ export default function BookingFormPage() {
                     htmlFor="catatan"
                     className="mb-1.5 block font-display text-[13px] font-semibold text-text-primary lg:text-sm"
                   >
-                    Catatan
-                    <span className="ml-1 text-xs font-normal text-text-secondary">(opsional)</span>
+                    {t("booking.catatan")}
+                    <span className="ml-1 text-xs font-normal text-text-secondary">{t("auth.opsional")}</span>
                   </label>
-                  <div className="relative rounded-xl transition focus-within:ring-2 focus-within:ring-accent/30">
-                    <FileText
-                      size={16}
-                      className="pointer-events-none absolute left-3.5 top-3.5 shrink-0 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4 lg:top-4"
-                    />
+                  <div className="relative rounded-xl border border-surface-border bg-bg transition focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
                     <textarea
                       id="catatan"
                       rows={3}
                       value={catatan}
                       onChange={(e) => setCatatan(e.target.value)}
-                      placeholder="Catatan tambahan (misal: request waktu ambil)"
-                      className="peer w-full resize-none rounded-xl border border-surface-border bg-bg py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-2 focus:ring-accent/20 lg:py-3.5 lg:pl-11 lg:text-base"
+                      placeholder={t("booking.catatan_placeholder")}
+                      className="peer w-full resize-none rounded-xl border-0 bg-transparent py-[13px] pl-10 pr-4 font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:outline-none focus:ring-0 lg:py-3.5 lg:pl-11 lg:text-base"
+                    />
+                    <FileText
+                      size={16}
+                      className="pointer-events-none absolute left-3.5 top-3.5 shrink-0 text-text-secondary transition-colors duration-200 peer-focus:text-accent lg:left-4 lg:top-4"
                     />
                   </div>
                 </div>
@@ -591,10 +639,10 @@ export default function BookingFormPage() {
                     </div>
                     <div>
                       <h2 className="font-display text-base font-semibold text-paper">
-                        Ringkasan Pesanan
+                        {t("booking.ringkasan")}
                       </h2>
                       <p className="font-display text-xs text-paper/70">
-                        {hasDates ? "Review sebelum lanjut" : "Belum ada tanggal dipilih"}
+                        {hasDates ? t("booking.review") : t("booking.belum_ada_tanggal")}
                       </p>
                     </div>
                   </div>
@@ -629,14 +677,14 @@ export default function BookingFormPage() {
                       <div className="flex items-center gap-2">
                         <MapPin size={14} className="shrink-0 text-text-secondary" />
                         <span className="font-display text-sm text-text-secondary">
-                          Pengambilan di{" "}
+                          {t("booking.pengambilan_di")}{" "}
                           <span className="font-semibold text-text-primary">{equipment.location}</span>
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Building2 size={14} className="shrink-0 text-text-secondary" />
                         <span className="font-display text-sm text-text-secondary">
-                          Penyedia:{" "}
+                          {t("booking.penyedia")}{" "}
                           <span className="font-semibold text-text-primary">{equipment.provider}</span>
                         </span>
                       </div>
@@ -650,10 +698,10 @@ export default function BookingFormPage() {
                         <CalendarDays size={24} className="text-text-secondary" />
                       </div>
                       <p className="mt-3 font-display text-sm font-medium text-text-primary">
-                        Pilih Tanggal Sewa
+                        {t("booking.pilih_tanggal")}
                       </p>
                       <p className="mt-1 font-display text-xs text-text-secondary">
-                        Tentukan tanggal ambil dan kembali untuk melihat rincian biaya
+                        {t("booking.ringkasan_desc")}
                       </p>
                     </div>
                   )}
@@ -673,15 +721,15 @@ export default function BookingFormPage() {
                             <div className="flex items-center justify-between">
                               <span className="flex items-center gap-1.5 font-display text-sm text-text-secondary">
                                 <Clock size={14} />
-                                Durasi Sewa
+                                {t("booking.durasi_sewa")}
                               </span>
                               <span className="font-display text-sm font-semibold text-text-primary">
-                                {days} hari
+                                {days} {t("booking.hari")}
                               </span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="font-display text-sm text-text-secondary">
-                                {formatPrice(equipment.pricePerDay)} × {days} hari
+                                {formatPrice(equipment.pricePerDay)} × {days} {t("booking.hari")}
                               </span>
                               <AnimatedPrice value={total} className="font-display text-sm font-semibold text-text-primary" />
                             </div>
@@ -695,7 +743,7 @@ export default function BookingFormPage() {
                           {/* Total */}
                           <div className="flex items-center justify-between px-7 py-5">
                             <span className="font-display text-base font-bold text-text-primary">
-                              Total
+                              {t("booking.total")}
                             </span>
                             <span className="font-display text-2xl font-bold text-accent">
                               <AnimatedPrice value={total} />
@@ -705,8 +753,8 @@ export default function BookingFormPage() {
                           {/* Date range summary */}
                           <div className="border-t border-surface-border bg-bg-elevated/50 px-7 py-3">
                             <div className="flex items-center justify-between font-display text-xs text-text-secondary">
-                              <span>Ambil: {formatDate(tanggalAmbil)}</span>
-                              <span>Kembali: {formatDate(tanggalKembali)}</span>
+                              <span>{t("booking.ambil")} {formatDate(tanggalAmbil)}</span>
+                              <span>{t("booking.kembali")} {formatDate(tanggalKembali)}</span>
                             </div>
                           </div>
                         </div>
@@ -719,17 +767,14 @@ export default function BookingFormPage() {
                 <div className="border-t border-surface-border px-7 py-5">
                   <motion.button
                     onClick={goToKonfirmasi}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={spring}
                     className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3.5 font-display text-sm font-bold text-paper shadow-sm transition hover:bg-accent-hover active:scale-[0.98]"
                   >
-                    Lanjut ke Konfirmasi
+                    {t("booking.lanjut_konfirmasi")}
                     <ChevronRight size={18} />
                   </motion.button>
                   {hasDates && (
                     <p className="mt-2 text-center font-display text-[11px] text-text-secondary">
-                      Data pemesanan dapat diubah sebelum konfirmasi akhir
+                      {t("booking.data_dapat_diubah")}
                     </p>
                   )}
                 </div>
@@ -743,28 +788,32 @@ export default function BookingFormPage() {
           <div className="rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-black/5 dark:ring-white/10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-display text-xs text-text-secondary">Total Sewa</p>
+                <p className="font-display text-xs text-text-secondary">{t("booking.total_sewa")}</p>
                 <p className="font-display text-xl font-bold text-accent">
                   {hasDates ? <AnimatedPrice value={total} /> : "\u2014"}
                 </p>
                 {hasDates && (
                   <p className="font-display text-[11px] text-text-secondary">
-                    {days} hari x {formatPrice(equipment.pricePerDay)}
+                    {days} {t("booking.hari")} x {formatPrice(equipment.pricePerDay)}
                   </p>
                 )}
               </div>
               <motion.button
                 onClick={goToKonfirmasi}
-                whileTap={{ scale: 0.95 }}
-                transition={spring}
                 className="flex cursor-pointer items-center gap-1.5 rounded-xl bg-accent px-6 py-3 font-display text-sm font-bold text-paper shadow-sm transition hover:bg-accent-hover active:scale-[0.98]"
               >
-                Lanjut
+                {t("booking.lanjut")}
                 <ChevronRight size={18} />
               </motion.button>
             </div>
           </div>
         </div>
+
+        <RenterSwitchModal
+          open={showRenterModal}
+          onClose={() => setShowRenterModal(false)}
+          onSuccess={() => window.location.reload()}
+        />
 
       </motion.div>
     </PageShell>

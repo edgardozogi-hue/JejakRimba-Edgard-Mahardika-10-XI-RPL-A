@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import ThemeProvider from "./components/ThemeProvider";
+import { LanguageProvider } from "./lib/i18n";
+import { CartProvider } from "./lib/cart";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +18,11 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <body className="antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            <CartProvider>{children}</CartProvider>
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

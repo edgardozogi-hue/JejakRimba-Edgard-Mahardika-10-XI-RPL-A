@@ -1,0 +1,100 @@
+@startuml
+title Pengembalian Alat & Ulasan - ASCII Table Visual (Jejak Rimba)
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Consolas"
+skinparam handwritten false
+hide footbox
+hide circle
+
+note as ASCII
++------+--------------------------+--------------------------+--------------------------+
+| STEP | VENDOR                   | SISTEM                   | PELANGGAN                |
++------+--------------------------+--------------------------+--------------------------+
+|  01  | [ Start Node ]           |                          |                          |
+|      |        |                 |                          |                          |
+|      |        v                 |                          |                          |
+|  02  | ( Memverifikasi          |                          |                          |
+|      |   Pengembalian Alat )    |                          |                          |
+|      |        |                 |                          |                          |
+|      |        v                 |                          |                          |
+|  03  | ( Mencatat Kondisi       |                          |                          |
+|      |   Alat Dikembalikan )    |                          |                          |
+|      |        |                 |                          |                          |
+|      |        v                 |                          |                          |
+|  04  | ( Menyetujui             |                          |                          |
+|      |   Pengembalian ) ------> |                          |                          |
+|      |                          |           |              |                          |
+|      |                          |           v              |                          |
+|  05  |                          | ( Update Status         |                          |
+|      |                          |   Booking jadi Selesai )|                          |
+|      |                          |           |              |                          |
+|      |                          |           v              |                          |
+|  06  |                          | ( Tambah Stok          |                          |
+|      |                          |   Alat )               |                          |
+|      |                          |           |              |                          |
+|      |                          |           v              |                          |
+|  07  |                          | ( Tandai Booking        |                          |
+|      |                          |   Dapat Diulas ) ----->|                          |
+|      |                          |                         |           |              |
+|      |                          |                         |           v              |
+|  08  |                          |                         | ( Pilih Menu          |
+|      |                          |                         |   Beri Ulasan )       |
+|      |                          |                         |           |              |
+|      |                          |                         |           v              |
+|  09  |                          |                         | ( Isi Rating &       |
+|      |                          |                         |   Komentar ) ------->  |
+|      |                          |                         |                         |
+|      |                          |                         |                          v
+|  10  |                          | ( Verifikasi Status   |                          |
+|      |                          |   Booking )           |                          |
+|      |                          |           |              |                          |
+|      |                          |           v              |                          |
+|  11  |                          |  < Decision:          |                          |
+|      |                          |  Booking Selesai? >   |                          |
+|      |                          |      /       \         |                          |
+|      |                          | [Belum]   [Ya]         |                          |
+|      |                          |   |        |             |                          |
+|      |                          |   v        v           |                          |
+|  12  |                          | ( Error:  | ( Cek Kepemilikan |                          |
+|      |                          |  Selesaikan|   Booking )      |                          |
+|      |                          |  Sewa Dulu)|       |           |                          |
+|      |                          |   (Stop)   |       v           |                          |
+|      |                          |            |  < Decision:       |                          |
+|      |                          |            |  Milik User? >    |                          |
+|      |                          |            |    /       \       |                          |
+|      |                          |            | [Tidak]  [Ya]     |                          |
+|      |                          |            |    |        |       |                          |
+|      |                          |            |    v        v      |                          |
+|  13  |                          |            | ( Error: | ( Cek Review |                          |
+|      |                          |            |  Akses   |  Duplikat )    |                          |
+|      |                          |            |  Ditolak)|       |        |                          |
+|      |                          |            |  (Stop)  |       v        |                          |
+|      |                          |            |          | < Decision:    |                          |
+|      |                          |            |          | Sudah Review? >|                          |
+|      |                          |            |          |   /       \    |                          |
+|      |                          |            |          | [Sudah] [Belum]|                          |
+|      |                          |            |          |   |        |   |                          |
+|      |                          |            |          |   v        v   |                          |
+|  14  |                          |            |          |( Error: | ( Simpan     |                          |
+|      |                          |            |          | Ulasan   |  Ulasan )    |                          |
+|      |                          |            |          |  Sudah ) |      |       |                          |
+|      |                          |            |          | (Stop)   |      v       |                          |
+|      |                          |            |          |          | ( Hitung Ulang  |                          |
+|      |                          |            |          |          |  Rata-Rata     |                          |
+|      |                          |            |          |          |      |         |                          |
+|      |                          |            |          |          |      v         |                          |
+|      |                          |            |          |          | ( Update Rating|                          |
+|      |                          |            |          |          |  Alat )        |                          |
+|      |                          |            |          |          |      |         |                          |
+|      |                          |            |          |          |      v         |                          |
+|      |                          |            |          |          | ( Tampilkan    |                          |
+|      |                          |            |          |          |  Ulasan Berhasil)                    |
+|      |                          |            |          |          |      |         |                          |
+|      |                          |            |          |          |  (End Review)  |                          |
+|      |                          |            |          |          |              |                          |
+|      |                          |            |          |          |              v                          |
+|  15  |                          |                         |                          | [ End Node ]       |
++------+--------------------------+--------------------------+--------------------------+
+end note
+
+@enduml

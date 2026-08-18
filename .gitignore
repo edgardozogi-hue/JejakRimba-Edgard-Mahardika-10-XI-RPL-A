@@ -32,3 +32,8 @@ yarn-error.log*
 *.swo
 
 .vercel
+
+# logs & personal
+dev-server.log
+prompt.txt
+

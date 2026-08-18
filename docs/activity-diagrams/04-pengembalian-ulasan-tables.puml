@@ -1,0 +1,71 @@
+@startuml
+title Tabel Referensi - Pengembalian Alat & Ulasan (Jejak Rimba)
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica"
+skinparam noteBackgroundColor #F8F9FA
+skinparam noteBorderColor #4A5568
+
+note as T1
+**Tabel Kondisi Alat Saat Dikembalikan**
+|===
+| Kondisi | Deskripsi | Dampak Stok
+| Baik | Alat utuh, fungsi normal | Stok +1, siap disewa
+| Rusak Ringan | Cacat kecil, masih pakai | Stok +1, butuh perbaikan
+| Rusak Berat | Tidak bisa dipakai | Stok +0, perlu ganti/perbaiki total
+| Hilang | Alat tidak dikembalikan | Stok +0, klaim ganti rugi
+|===
+end note
+
+note as T2
+**Tabel Validasi Ulasan**
+|===
+| Validasi | Syarat | Jika Gagal
+| Status Booking | Harus "selesai" | Error: Selesaikan sewa dulu
+| Kepemilikan | booking.renter_id = user.id | Error: Akses ditolak
+| Duplikat (via booking_id) | Belum ada review untuk booking ini | Error: Ulasan sudah ada
+| Duplikat (general) | Belum review alat ini tanpa booking | Error: Ulasan sudah ada
+| Rating Range | 1 - 5 | Error: Rating harus 1-5
+|===
+end note
+
+note as T3
+**Tabel Perhitungan Rating**
+|===
+| Rumus | new_avg = (old_avg * count + new_rating) / (count + 1)
+| Update Otomatis | Trigger: insert ke tabel reviews
+| Tampil Di | Katalog alat, detail alat, testimoni landing
+|===
+end note
+
+note as T4
+**Tabel Aktor & Tanggung Jawab**
+|===
+| Aktor | Aktivitas Utama
+| Vendor | Verifikasi fisik alat, catat kondisi, setujui pengembalian
+| Sistem | Update status, stok, flag ulasan, hitung rating, simpan review
+| Pelanggan | Isi rating 1-5 + komentar opsional
+|===
+end note
+
+note as T5
+**Tabel Decision Points**
+|===
+| Decision Point | Guard True | Guard False
+| Booking Selesai? | [Ya] → cek kepemilikan | [Belum] → error
+| Milik User? | [Ya] → cek duplikat | [Tidak] → akses ditolak
+| Sudah Review? | [Sudah] → error | [Belum] → simpan review
+|===
+end note
+
+note as T6
+**Tabel Entitas Data**
+|===
+| Entitas | Field Penting
+| bookings | id, renter_id, equipment_id, status, end_date
+| equipment | id, name, stock, condition
+| reviews | id, booking_id, reviewer_id, equipment_id, rating, comment, created_at
+| profiles | id, full_name, avatar_url
+|===
+end note
+
+@enduml

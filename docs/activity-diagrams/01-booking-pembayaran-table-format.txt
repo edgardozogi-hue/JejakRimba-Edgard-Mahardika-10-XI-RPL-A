@@ -1,0 +1,101 @@
++------+--------------------------+--------------------------+--------------------------+
+| STEP | PELANGGAN                | SISTEM                   | VENDOR                   |
++------+--------------------------+--------------------------+--------------------------+
+|  01  | [ Start Node ]           |                          |                          |
+|      |           |              |                          |                          |
+|      |           v              |                          |                          |
+|  02  | ( Memilih Alat           |                          |                          |
+|      |   dari Katalog )         |                          |                          |
+|      |           |              |                          |                          |
+|      |           v              |                          |                          |
+|  03  | ( Mengisi Tanggal        |                          |                          |
+|      |   Sewa & Data            |                          |                          |
+|      |   Penyewa )              |                          |                          |
+|      |           |              |                          |                          |
+|      |           v              |                          |                          |
+|  04  | ( Menekan Tombol         |                          |                          |
+|      |   Bayar ) ------------>  |                          |                          |
+|      |                          |           |              |                          |
+|      |                          |           v              |                          |
+|  05  |                          | ( Memvalidasi           |                          |
+|      |                          |   Data Pemesanan )       |                          |
+|      |                          |           |              |                          |
+|      |                          |           v              |                          |
+|  06  |                          |  < Decision:            |                          |
+|      |                          |  Data Valid? >           |                          |
+|      |                          |      /         \         |                          |
+|      |                          | [Tidak]     [Ya]         |                          |
+|      |                          |      |         |           |                          |
+|      |                          |      v         v         |                          |
+|  07  |                          | ( Tampilkan  |           |                          |
+|      |                          |   Error      | ( Verifikasi        |                          |
+|      |                          |   Validasi ) |   Stok Alat )       |                          |
+|      |                          |      |         |           |                          |
+|      |                          |   (Stop)     |           v         |                          |
+|      |                          |              |  < Decision:       |                          |
+|      |                          |              |  Stok Tersedia? >  |                          |
+|      |                          |              |      /       \       |                          |
+|      |                          |              | [Kosong]  [Ada]     |                          |
+|      |                          |              |      |       |        |                          |
+|      |                          |              |      v       v       |                          |
+|  08  |                          | ( Error Stok | ( Hitung Durasi   |                          |
+|      |                          |   Tidak Cukup)| & Total Harga )   |                          |
+|      |                          |      |         |           |                          |
+|      |                          |    (Stop)    |           v        |                          |
+|  09  |                          |              | ( Membuat Booking  |                          |
+|      |                          |              |   Status: Menunggu  |                          |
+|      |                          |              |   Konfirmasi )      |                          |
+|      |                          |              |           |         |                          |
+|      |                          |              |           v         |                          |
+|  10  |                          |  < Decision:           |                          |
+|      |                          |  Midtrans Aktif? >     |                          |
+|      |                          |      /       \         |                          |
+|      |                          | [Tidak]    [Ya]        |                          |
+|      |                          |     |        |          |                          |
+|      |                          |     v        v         |                          |
+|  11  |                          | ( Arahkan  | ( Buat Snap   |                          |
+|      |                          |  ke Status)|  Token )     |                          |
+|      |                          |     |         |          |                          |
+|      |                          |     |         v          |                          |
+|      |                          |     | ( Buka Popup       |                          |
+|      |                          |     |  Pembayaran )      |                          |
+|      |                          |     |        |          |                          |
+|      |                          |     |        v          |                          |
+|  12  |                          |  < Decision:           |                          |
+|      |                          |  Hasil Bayar? >        |                          |
+|      |                          |      /       \         |                          |
+|      |                          | [Gagal]  [Sukses]      |                          |
+|      |                          |     |        |          |                          |
+|      |                          |     v        v         |                          |
+|  13  |                          | ( Error   | ( Update Status  |                          |
+|      |                          |  Bayar )  |  Booking )       |                          |
+|      |                          |    (Stop)     |         |          |                          |
+|      |                          |              |         v          |                          |
+|      |                          |              | ================== |                          |
+|      |                          |              | [ FORK / PARALEL ] |                          |
+|      |                          |              |    |         |     |                          |
+|      |                          |              |    v         v     |                          |
+|  14  |                          |              |( Update DB  | ( Kirim       |                          |
+|      |                          |              |  Booking ) |  Notif )     |                          |
+|      |                          |              |    |         |     |                          |
+|      |                          |              |    \_________/     |                          |
+|      |                          |              |         |          |                          |
+|      |                          |              |         v          |                          |
+|      |                          |              |  ==================|                          |
+|      |                          |              |  [ JOIN / PARALEL ]|                          |
+|      |                          |              |         |          |                          |
+|      |                          |              |         v          |                          |
+|  15  |                          |                          | ( Mengonfirmasi    |
+|      |                          |                          |   Booking )        |
+|      |                          |                          |         |          |
+|      |                          |                          |         v          |
+|  16  |                          |                          |  [ End Node ]      |
++------+--------------------------+--------------------------+--------------------------+
+
+LEGENDA:
+- ( Aktivitas )        = Action/Activity (kata kerja aktif)
+- < Decision >         = Decision Point dengan Guard [Kondisi]
+- ==================   = Fork / Join untuk proses paralel
+- [ Start/End Node ]   = Initial State / Final State
+- -->                  = Transisi alur (sequential)
+- |                    = Swimlane boundary

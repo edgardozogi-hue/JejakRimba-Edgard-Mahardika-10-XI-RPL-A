@@ -1,0 +1,83 @@
++------+--------------------------+--------------------------+
+| STEP | VENDOR                   | SISTEM                   |
++------+--------------------------+--------------------------+
+|  01  | [ Start Node ]           |                          |
+|      |           |              |                          |
+|      |           v              |                          |
+|  02  | ( Memilih Booking        |                          |
+|      |   yang Masuk )           |                          |
+|      |           |              |                          |
+|      |           v              |                          |
+|  03  | ( Menampilkan Detail     |                          |
+|      |   Booking ) ---------->  |                          |
+|      |                          |           |              |
+|      |                          |           v              |
+|  04  |                          | ( Memverifikasi         |
+|      |                          |   Kepemilikan Booking ) |
+|      |                          |           |              |
+|      |                          |           v              |
+|  05  |                          |  < Decision:            |
+|      |                          |  Milik Vendor? >        |
+|      |                          |      /       \          |
+|      |                          | [Tidak]    [Ya]         |
+|      |                          |     |        |            |
+|      |                          |     v        v          |
+|  06  |                          | ( Error   | ( Tampilkan  |
+|      |                          |  Akses    |  Status Saat |
+|      |                          |  Ditolak )|  Ini )       |
+|      |                          |   (Stop)     |           |
+|      |                          |              |           v |
+|      |                          |              |  < Decision:           |
+|      |                          |              |  Status Booking? >     |
+|      |                          |              |   /    |    \    \    |
+|      |                          |              | [Menunggu] [Sedang] [Dibatalkan/ |
+|      |                          |              | [Konfirmasi] [Berjalan] [Selesai] |
+|      |                          |              |   |       |        |             |
+|      |                          |              |   v       v        v             |
+|  07  | ( Mengonfirmasi          | ( Update jadi|                          |
+|      |   Booking ) ---------->  |  Dikonfirmasi|                          |
+|      |           |              |   |           |                          |
+|      |           |              |   v           |                          |
+|      |           |              | ( Update jadi |                          |
+|      |           |              |  Sedang       |                          |
+|      |           |              |  Berjalan )   |                          |
+|      |           |              |   |           |                          |
+|      |           |              |   v           |                          |
+|      |           |              | ( Update jadi |                          |
+|      |           |              |  Selesai )    |                          |
+|      |           |              |   |           |                          |
+|  08  | ( Menandai Alat          |                          |                          |
+|      |   Dikembalikan ) ------> |                          |
+|      |           |              |                          |
+|      |           v              |                          |
+|  09  |                          | ( Update Status       |
+|      |                          |   jadi Selesai )      |
+|      |                          |           |              |
+|      |                          |           v              |
+|      |                          | ( Tampilkan Pesan      |
+|      |                          |   Dibatalkan/Selesai ) |
+|      |                          |           |              |
+|      |                          |         (Stop)          |
+|      |                          |                          |
+|      |                          | ==================      |
+|      |                          | [ FORK / PARALEL ]      |
+|      |                          |     |          |         |
+|      |                          |     v          v         |
+|  10  |                          | ( Update DB  | ( Validasi |
+|      |                          |  Booking )   |  Cache )   |
+|      |                          |     \__________/         |
+|      |                          |           |              |
+|      |                          | ==================      |
+|      |                          | [ JOIN / PARALEL ]      |
+|      |                          |           |              |
+|      |                          |           v              |
+|  11  |                          |  [ End Node ]           |
++------+--------------------------+--------------------------+
+
+LEGENDA:
+- ( Aktivitas )        = Action/Activity (kata kerja aktif)
+- < Decision >         = Decision Point dengan Guard [Kondisi]
+- ==================   = Fork / Join untuk proses paralel
+- [ Start/End Node ]   = Initial State / Final State
+- -->                  = Transisi alur (sequential)
+- |                    = Swimlane boundary

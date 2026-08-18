@@ -1,0 +1,142 @@
++------+--------------------------+--------------------------+
+| STEP | PENGGUNA                 | SISTEM                   |
++------+--------------------------+--------------------------+
+|  01  | [ Start Node ]           |                          |
+|      |           |              |                          |
+|      |           v              |                          |
+|  02  |  < Decision:            |                          |
+|      |  Memiliki Akun? >        |                          |
+|      |      /       \           |                          |
+|      | [Tidak]    [Ya]          |                          |
+|      |    |        |              |                          |
+|      |    v        v            |                          |
+|  03  | ( Pilih Menu      | ( Pilih Menu       |
+|      |   Daftar )       |   Masuk ) -------> |
+|      |    |            |    |              |
+|      |    v            |    v              |
+|  04  | ( Isi Data     | ( Isi Email &    |
+|      |   Registrasi ) |   Password )     |
+|      |    |            |    |              |
+|      |    v            |    +------------>|
+|      |    |            |    |              |
+|      |    v            |    |              |
+|  05  | ( Pilih Role  |                  |
+|      |   Penyewa/    |                  |
+|      |   Vendor )    |                  |
+|      |    |            |                  |
+|      |    +------------>                   |
+|      |                 |                  |
+|      |                 v                  |
+|  06  |                 ( Validasi Data   |
+|      |                 Registrasi )     |
+|      |                 |    |             |
+|      |                 |    v             |
+|      |                 | < Decision:     |
+|      |                 | Data Valid? >   |
+|      |                 |    /       \    |
+|      |                 | [Tidak]  [Ya]   |
+|      |                 |    |        |     |
+|      |                 |    v        v    |
+|  07  |                 | ( Error  | ( Buat Akun  |
+|      |                 |  Registrasi)    | di Auth )    |
+|      |                 |   (Stop)   |      |         |
+|      |                 |            |      v         |
+|      |                 |            | ( Simpan      |
+|      |                 |            |  Profil )     |
+|      |                 |            |      |         |
+|      |                 |            |      v         |
+|  08  |                 |  < Decision:          |
+|      |                 |  Role Vendor? >       |
+|      |                 |    /       \          |
+|      |                 | [Ya]      [Tidak]     |
+|      |                 |    |        |           |
+|      |                 |    v        |           |
+|  09  |                 | ( Simpan Data |       |
+|      |                 |  Usaha Vendor)|       |
+|      |                 |    |        |           |
+|      |                 |    \________/           |
+|      |                 |         |               |
+|      |                 |         v               |
+|  10  |                 | ( Arahkan ke           |
+|      |                 |  Beranda )            |
+|      |                 |    |                  |
+|      |                 |   (End Registrasi)    |
+|      |                 |                       |
+|      |                 |    -----------------  |
+|      |                 | LOGIN FLOW (jika ya)  |
+|      |                 |                       |
+|  11  | ( Masuk Email  | ( Verifikasi         |
+|      |   & Password )-------->  Kredensial )        |
+|      |                 |    |                  |
+|      |                 |    v                  |
+|  12  |                 | < Decision:           |
+|      |                 | Kredensial Benar? >   |
+|      |                 |    /       \          |
+|      |                 | [Tidak]  [Ya]         |
+|      |                 |    |        |           |
+|      |                 |    v        v          |
+|  13  |                 | ( Error   | < Decision:          |
+|      |                 |  Login )  | Login Google? >     |
+|      |                 |   (Stop)  |    /       \        |
+|      |                 |           | [Ya]     [Tidak]    |
+|      |                 |           |    |        |         |
+|      |                 |           |    v        v        |
+|  14  |                 |           | ( Redirect |       |
+|      |                 |           |  OAuth     |        |
+|      |                 |           |  Google )  |        |
+|      |                 |           |    |       |         |
+|      |                 |           |    v       |         |
+|      |                 |           | ( Callback &|        |
+|      |                 |           |  Buat Sesi)|        |
+|      |                 |           |    |       |         |
+|      |                 |           |    \_______/         |
+|      |                 |           |         |           |
+|      |                 |           |         v           |
+|  15  |                 | ( Buat Sesi        |
+|      |                 |  Login ) ----------|
+|      |                 |    |              |
+|      |                 |    v              |
+|  16  |                 | ( Arahkan ke      |
+|      |                 |  Halaman Akun )   |
+|      |                 |    |              |
+|      |                 |  (End Login)      |
+|      |                 |                       |
+|      |                 |    -----------------  |
+|      |                 | APP USAGE FLOW       |
+|      |                 |                       |
+|  17  | ( Menggunakan  |                       |
+|      |  Aplikasi )    |                       |
+|      |    |           |                       |
+|      |    v           |                       |
+|  18  | < Decision:    |                       |
+|      | Ingin Keluar? >|                       |
+|      |    /       \   |                       |
+|      | [Ya]    [Tidak]|                       |
+|      |  |       |     |                       |
+|      |  v       |     |                       |
+|  19  |           |     |                       |
+|      |           |     v                       |
+|  20  |           |     ( Lanjutkan      |
+|      |           |   Aktivitas )       |
+|      |           |     |                       |
+|      |           |    (End)                |
+|      |  |                       |
+|      |  v                       |
+|  21  | ( Hapus Sesi   |                       |
+|      | ) <----------- |                       |
+|      |    |           |                       |
+|      |    v           |                       |
+|  22  | ( Arahkan ke  |                       |
+|      |  Beranda )    |                       |
+|      |    |           |                       |
+|      |    v           |                       |
+|  23  | [ End Node ]  |                       |
++------+--------------------------+--------------------------+
+
+LEGENDA:
+- ( Aktivitas )        = Action/Activity (kata kerja aktif)
+- < Decision >         = Decision Point dengan Guard [Kondisi]
+- ==================   = Fork / Join untuk proses paralel
+- [ Start/End Node ]   = Initial State / Final State
+- -->                  = Transisi alur (sequential)
+- |                    = Swimlane boundary

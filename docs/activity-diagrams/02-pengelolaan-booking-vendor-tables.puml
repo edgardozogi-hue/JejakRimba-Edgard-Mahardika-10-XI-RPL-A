@@ -1,0 +1,49 @@
+@startuml
+title Tabel Referensi - Pengelolaan Booking Vendor (Jejak Rimba)
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica"
+skinparam noteBackgroundColor #F8F9FA
+skinparam noteBorderColor #4A5568
+
+note as T1
+**Tabel Transisi Status Vendor**
+|===
+| Status Awal | Aksi Vendor | Status Baru | Syarat
+| menunggu_konfirmasi | Mengonfirmasi | dikonfirmasi | Stok tersedia
+| dikonfirmasi | Mulai Sewa | sedang_berjalan | Tanggal mulai tercapai
+| sedang_berjalan | Terima Kembali | selesai | Alat lengkap & baik
+| * (selain selesai) | Batalkan | dibatalkan | Alasan valid
+|===
+end note
+
+note as T2
+**Tabel Aktor & Tanggung Jawab**
+|===
+| Aktor | Aktivitas Utama
+| Vendor | Lihat booking masuk, konfirmasi, terima kembali, batalkan, update status
+| Sistem | Verifikasi kepemilikan, update DB, revalidasi cache, hitung stok otomatis
+|===
+end note
+
+note as T3
+**Tabel Decision Points**
+|===
+| Decision Point | Guard True | Guard False
+| Milik Vendor? | [Ya] → lanjut lihat status | [Tidak] → akses ditolak
+| Status Booking? | [Menunggu] → konfirmasi | [Sedang] → terima kembali
+| | [Dibatalkan/Selesai] → info | [Lainnya] → error
+|===
+end note
+
+note as T4
+**Tabel Entitas Data**
+|===
+| Entitas | Field Penting
+| bookings | id, renter_id, equipment_id, start_date, end_date, status, notes
+| equipment | id, name, stock, vendor_id, condition
+| vendors | id, profile_id, business_name, is_active
+| profiles | id, full_name, role
+|===
+end note
+
+@enduml

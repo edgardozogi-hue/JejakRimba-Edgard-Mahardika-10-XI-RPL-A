@@ -7,7 +7,8 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import AuthLayout from "../components/AuthLayout";
 import { supabase } from "../lib/supabase";
-import { staggerContainer, fadeUp, spring } from "../lib/animations";
+import { staggerContainer, fadeUp } from "../lib/animations";
+import { useLanguage } from "../lib/i18n";
 
 function GoogleIcon() {
   return (
@@ -22,6 +23,7 @@ function GoogleIcon() {
 
 export default function MasukPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -37,7 +39,7 @@ export default function MasukPage() {
 
     setLoading(false);
     if (error) {
-      setError("Email atau password salah. Coba periksa lagi.");
+      setError(t("auth.error_login"));
       return;
     }
     router.push("/");
@@ -50,7 +52,7 @@ export default function MasukPage() {
       options: { redirectTo: `${window.location.origin}/` },
     });
     if (error) {
-      setError("Gagal masuk dengan Google. Coba lagi nanti.");
+      setError(t("auth.error_google"));
     }
   }
 
@@ -62,30 +64,30 @@ export default function MasukPage() {
         variants={staggerContainer}
       >
         <motion.h1 variants={fadeUp} className="font-display text-2xl font-bold text-text-primary">
-          Selamat datang kembali
+          {t("auth.masuk_welcome")}
         </motion.h1>
         <motion.p variants={fadeUp} className="mt-1 text-sm text-text-secondary">
-          Masuk buat lanjut sewa alat petualanganmu.
+          {t("auth.masuk_desc")}
         </motion.p>
 
         <motion.form variants={fadeUp} onSubmit={handleLogin} className="mt-8 space-y-5">
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-text-primary">Email</label>
+            <label className="mb-1.5 block text-sm font-semibold text-text-primary">{t("auth.email")}</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="nama@email.com"
+              placeholder={t("auth.email_placeholder")}
               className="w-full rounded-xl border border-surface-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-secondary/60 outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
             />
           </div>
 
           <div>
             <div className="mb-1.5 flex items-center justify-between">
-              <label className="block text-sm font-semibold text-text-primary">Password</label>
+              <label className="block text-sm font-semibold text-text-primary">{t("auth.password")}</label>
               <Link href="/lupa-password" className="text-xs font-medium text-accent hover:underline">
-                Lupa password?
+                {t("auth.lupa_password")}
               </Link>
             </div>
             <div className="relative">
@@ -94,14 +96,14 @@ export default function MasukPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="......"
+                placeholder={t("auth.password_placeholder")}
                 className="w-full rounded-xl border border-surface-border bg-surface px-4 py-3 pr-11 text-sm text-text-primary outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((s) => !s)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition hover:text-text-primary"
-                aria-label={showPassword ? "Sembunyikan" : "Tampilkan"}
+                className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl text-text-secondary transition hover:bg-surface hover:text-text-primary"
+                aria-label={showPassword ? t("auth.sembunyikan") : t("auth.tampilkan")}
               >
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
@@ -118,12 +120,9 @@ export default function MasukPage() {
           <motion.button
             type="submit"
             disabled={loading}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            transition={spring}
             className="w-full rounded-xl bg-accent py-3.5 text-sm font-semibold text-paper transition hover:bg-accent-hover disabled:opacity-60"
           >
-            {loading ? "Memproses..." : "Masuk"}
+            {loading ? t("auth.memproses") : t("auth.masuk")}
           </motion.button>
 
           <div className="relative flex items-center justify-center">
@@ -131,34 +130,31 @@ export default function MasukPage() {
               <div className="w-full border-t border-surface-border" />
             </div>
             <span className="relative bg-bg px-3 text-xs font-medium text-text-secondary">
-              Atau masuk dengan
+              {t("auth.atau")}
             </span>
           </div>
 
           <motion.button
             type="button"
             onClick={handleGoogleLogin}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            transition={spring}
             className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-surface-border bg-surface px-4 py-3 text-sm font-semibold text-text-primary transition hover:border-accent"
           >
             <GoogleIcon />
-            Masuk dengan Google
+            {t("auth.masuk_google")}
           </motion.button>
         </motion.form>
 
         <motion.p variants={fadeUp} className="mt-8 text-center text-sm text-text-secondary">
-          Belum punya akun?{" "}
+          {t("auth.belum_punya_akun")}{" "}
           <Link href="/daftar" className="font-semibold text-accent hover:underline">
-            Daftar di sini
+            {t("auth.daftar_di_sini")}
           </Link>
         </motion.p>
 
         <motion.div variants={fadeUp} className="mt-10 flex justify-center gap-4 text-xs text-text-secondary/70">
-          <Link href="/privasi" className="hover:text-text-primary">Kebijakan Privasi</Link>
+          <Link href="/kebijakan-privasi" className="hover:text-text-primary">{t("auth.privasi")}</Link>
           <span>·</span>
-          <Link href="/syarat" className="hover:text-text-primary">Syarat &amp; Ketentuan</Link>
+          <Link href="/syarat-ketentuan" className="hover:text-text-primary">{t("auth.syarat")}</Link>
         </motion.div>
       </motion.div>
     </AuthLayout>

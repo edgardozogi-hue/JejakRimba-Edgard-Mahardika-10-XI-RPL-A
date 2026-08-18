@@ -1,0 +1,54 @@
+@startuml
+title Pengembalian Alat & Ulasan - Swimlane Visual (Jejak Rimba)
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica"
+skinparam swimlaneBackgroundColor #F8F9FA
+skinparam swimlaneBorderColor #4A5568
+skinparam activityBackgroundColor #E8F0FE
+skinparam activityBorderColor #4A5568
+skinparam activityFontColor #1A1A2E
+skinparam activityFontSize 10
+skinparam diamondBackgroundColor #FFE0B2
+skinparam diamondBorderColor #4A5568
+skinparam diamondFontColor #1A1A2E
+
+|Vendor|
+start
+:Memverifikasi Pengembalian Alat;
+:Mencatat Kondisi Alat Dikembalikan;
+:Menyetujui Pengembalian;
+
+|Sistem|
+:Memperbarui Status Booking jadi Selesai;
+:Menambah Stok Alat;
+:Menandai Booking Dapat Diulas;
+
+|Pelanggan|
+:Memilih Menu Beri Ulasan;
+:Mengisi Rating & Komentar;
+|Sistem|
+:Memverifikasi Status Booking;
+if (Booking Selesai?) then ([Ya])
+  :Memeriksa Kepemilikan Booking;
+  if (Booking Milik User?) then ([Ya])
+    :Memeriksa Review Duplikat;
+    if (Sudah Pernah Review?) then ([Belum])
+      :Menyimpan Ulasan;
+      :Menghitung Ulang Rata-Rata Rating;
+      :Memperbarui Rating Alat;
+      :Menampilkan Ulasan Berhasil;
+    else ([Sudah])
+      :Menampilkan Error Ulasan Sudah Ada;
+      stop
+    endif
+  else ([Tidak])
+    :Menampilkan Error Akses Ditolak;
+    stop
+  endif
+else ([Belum Selesai])
+  :Menampilkan Error Selesaikan Sewa Dulu;
+  stop
+endif
+
+stop
+@enduml

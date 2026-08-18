@@ -1,0 +1,58 @@
+@startuml
+title Booking & Pembayaran - Swimlane Visual (Jejak Rimba)
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica"
+skinparam swimlaneBackgroundColor #F8F9FA
+skinparam swimlaneBorderColor #4A5568
+skinparam activityBackgroundColor #E8F0FE
+skinparam activityBorderColor #4A5568
+skinparam activityFontColor #1A1A2E
+skinparam activityFontSize 10
+skinparam diamondBackgroundColor #FFE0B2
+skinparam diamondBorderColor #4A5568
+skinparam diamondFontColor #1A1A2E
+
+|Pelanggan|
+start
+:Memilih Alat dari Katalog;
+:Mengisi Tanggal Sewa & Data Penyewa;
+:Menekan Tombol Bayar;
+
+|Sistem|
+:Memvalidasi Data Pemesanan;
+if (Data Valid?) then ([Ya])
+  :Memverifikasi Stok Alat;
+  if (Stok Tersedia?) then ([Stok Ada])
+    :Menghitung Durasi & Total Harga;
+    :Membuat Booking (Menunggu Konfirmasi);
+    if (Midtrans Dikonfigurasi?) then ([Ya])
+      :Membuat Snap Token;
+      :Membuka Popup Pembayaran;
+      if (Hasil Pembayaran?) then ([Sukses / Pending])
+        :Memperbarui Status Booking;
+      else ([Gagal / Ditutup])
+        :Menampilkan Error Bayar;
+        stop
+      endif
+    else ([Tidak])
+      :Mengarahkan ke Halaman Status;
+    endif
+  else ([Stok Kosong])
+    :Menampilkan Error Stok;
+    stop
+  endif
+else ([Tidak])
+  :Menampilkan Error Validasi;
+  stop
+endif
+
+fork
+  :Memperbarui Database Booking;
+fork again
+  :Mengirim Notifikasi Status;
+end fork
+
+|Vendor|
+:Mengonfirmasi Booking;
+stop
+@enduml

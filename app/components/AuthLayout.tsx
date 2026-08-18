@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { ReactNode } from "react";
 import { Mountain, ArrowLeft } from "lucide-react";
+import { useLanguage } from "../lib/i18n";
 
 export default function AuthLayout({
   children,
@@ -9,6 +12,8 @@ export default function AuthLayout({
   children: ReactNode;
   activeTab: "masuk" | "daftar";
 }) {
+  const { t } = useLanguage();
+
   return (
     <main className="flex min-h-screen">
       {/* Form panel */}
@@ -29,7 +34,7 @@ export default function AuthLayout({
               className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-bg-elevated hover:text-text-primary"
             >
               <ArrowLeft size={16} />
-              Kembali
+              {t("auth.kembali")}
             </Link>
           </div>
 
@@ -43,7 +48,7 @@ export default function AuthLayout({
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
-              Masuk
+              {t("auth.masuk")}
             </Link>
             <Link
               href="/daftar"
@@ -53,7 +58,7 @@ export default function AuthLayout({
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
-              Daftar
+              {t("auth.daftar")}
             </Link>
           </div>
 
@@ -62,34 +67,12 @@ export default function AuthLayout({
       </div>
 
       {/* Visual panel */}
-      <div className="contour-bg relative hidden w-1/2 items-center justify-center overflow-hidden md:flex">
-        <div className="absolute inset-0 bg-gradient-to-t from-bark via-transparent to-transparent opacity-60" />
-        <div className="relative z-10 max-w-md px-12 text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-ember-light">
-            Terpercaya Sejak 2024
-          </p>
-          <h2 className="mt-4 font-display text-3xl font-bold leading-tight text-paper">
-            Setiap jejak dimulai dari perlengkapan yang tepat.
-          </h2>
-          <p className="mt-4 text-sm leading-relaxed text-paper/70">
-            Sewa alat mendaki dan berkemah berkualitas dari mitra terpercaya
-            di seluruh Malang Raya.
-          </p>
-          <div className="mt-10 grid grid-cols-3 gap-4 border-t border-paper/15 pt-6">
-            <div>
-              <p className="font-display text-xl font-bold text-paper">500+</p>
-              <p className="mt-0.5 text-[11px] text-paper/50">Alat</p>
-            </div>
-            <div>
-              <p className="font-display text-xl font-bold text-paper">40+</p>
-              <p className="mt-0.5 text-[11px] text-paper/50">Mitra</p>
-            </div>
-            <div>
-              <p className="font-display text-xl font-bold text-paper">12</p>
-              <p className="mt-0.5 text-[11px] text-paper/50">Lokasi</p>
-            </div>
-          </div>
-        </div>
+      <div className="relative hidden w-1/2 overflow-hidden md:block">
+        <img
+          src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80"
+          alt={t("home.hero_title")}
+          className="h-full w-full object-cover"
+        />
       </div>
     </main>
   );

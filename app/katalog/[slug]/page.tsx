@@ -1,8 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   MapPin,
   User,
@@ -13,19 +15,24 @@ import {
   ArrowLeft,
   AlertTriangle,
   XCircle,
+  ShoppingCart,
+  Check,
 } from "lucide-react";
-import { equipmentList } from "../../lib/data";
+import { getEquipmentById } from "../../actions/equipment";
+import type { EquipmentFrontend } from "../../lib/database.types";
 import {
   staggerContainer,
   fadeUp,
   spring,
-  springSnappy,
 } from "../../lib/animations";
 import PageShell from "../../components/PageShell";
 import StarRating from "../../components/StarRating";
 import RatingForm from "../../components/RatingForm";
+import { useCart } from "../../lib/cart";
 
 const MAX_STOCK = 15;
+
+const FALLBACK_IMAGE = "/placeholders/tenda.svg";
 
 const categoryImages: Record<string, string> = {
   Tenda: "/placeholders/tenda.svg",
@@ -60,17 +67,10 @@ const categoryDescriptions: Record<
     `${name} adalah jaket gunung waterproof dan windproof yang melindungi dari cuaca ekstrem di pegunungan. Dilengkapi hood, saku zipper, dan material breathable yang menjaga suhu tubuh tetap stabil selama pendakian.`,
 };
 
-function formatElevation(raw: string): string {
-  const num = parseInt(raw, 10);
-  return num >= 1000
-    ? `${(num / 1000).toFixed(1).replace(".", ",")}`
-    : `${num}`;
-}
-
 function StockBadge({ stock }: { stock: number }) {
   if (stock === 0) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-red/10 px-3 py-1 font-mono text-xs font-medium text-red-600">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-red/10 px-3 py-1 font-archivo text-xs font-medium text-red-600">
         <XCircle size={14} />
         Stok Habis
       </span>
@@ -78,14 +78,14 @@ function StockBadge({ stock }: { stock: number }) {
   }
   if (stock <= 3) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/10 px-3 py-1 font-mono text-xs font-medium text-amber-600">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/10 px-3 py-1 font-archivo text-xs font-medium text-amber-600">
         <AlertTriangle size={14} />
         Sisa {stock}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-secondary/10 px-3 py-1 font-mono text-xs font-medium text-accent-secondary">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-secondary/10 px-3 py-1 font-archivo text-xs font-medium text-accent-secondary">
       <BadgeCheck size={14} />
       Tersedia
     </span>
@@ -111,7 +111,7 @@ function StockBar({ stock }: { stock: number }) {
           className={`h-full rounded-full ${barColor}`}
         />
       </div>
-      <span className="shrink-0 font-mono text-xs tabular-nums text-text-secondary">
+      <span className="shrink-0 font-archivo text-xs tabular-nums text-text-secondary">
         {stock}/{MAX_STOCK}
       </span>
     </div>
@@ -128,12 +128,12 @@ function InfoCard({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-surface-border bg-surface p-4">
+    <div className="flex h-full items-center gap-3 rounded-xl border border-surface-border bg-surface p-4">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-secondary/10 text-accent-secondary">
         {icon}
       </div>
       <div className="min-w-0">
-        <p className="font-mono text-[11px] tracking-wide text-text-secondary">
+        <p className="font-archivo text-[11px] tracking-wide text-text-secondary">
           {label.toUpperCase()}
         </p>
         <p className="mt-0.5 truncate font-display text-sm font-semibold text-text-primary">
@@ -180,8 +180,42 @@ function NotFoundState({ slug }: { slug: string }) {
 export default function DetailAlatPage() {
   const params = useParams();
   const slug = params.slug as string;
+  const [item, setItem] = useState<EquipmentFrontend | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [imgError, setImgError] = useState(false);
+  const [activeImg, setActiveImg] = useState(0);
+  const [added, setAdded] = useState(false);
+  const { addItem } = useCart();
 
-  const item = equipmentList.find((e) => e.id === slug);
+  useEffect(() => {
+    getEquipmentById(slug).then((data) => {
+      setItem(data);
+      setLoading(false);
+    });
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <PageShell>
+      <section className="px-6 py-12 pb-40 md:pb-12">
+          <div className="mx-auto max-w-6xl">
+            <div className="h-4 w-24 animate-pulse rounded bg-surface-border" />
+            <div className="mt-8 grid gap-8 md:grid-cols-2 md:gap-12">
+              <div className="h-64 animate-pulse rounded-2xl bg-surface md:h-96" />
+              <div className="space-y-6">
+                <div className="h-4 w-20 animate-pulse rounded bg-surface-border" />
+                <div className="h-8 w-3/4 animate-pulse rounded bg-surface-border" />
+                <div className="h-6 w-32 animate-pulse rounded bg-surface-border" />
+                <div className="grid grid-cols-2 gap-3">
+                  {[1,2,3,4].map(i => <div key={i} className="h-16 animate-pulse rounded-xl bg-surface" />)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </PageShell>
+    );
+  }
 
   if (!item) {
     return (
@@ -191,9 +225,8 @@ export default function DetailAlatPage() {
     );
   }
 
-  const elevationDisplay = formatElevation(item.elevation);
   const description =
-    categoryDescriptions[item.category]?.(item.name, item.capacity) ??
+    categoryDescriptions[item.category]?.(item.name, item.capacity ?? undefined) ??
     `${item.name} siap untuk disewa dan digunakan dalam petualangan alam kamu.`;
 
   const infoCards = [
@@ -206,14 +239,33 @@ export default function DetailAlatPage() {
     {
       icon: <Mountain size={18} />,
       label: "Elevasi",
-      value: `≥ ${elevationDisplay} mdpl`,
+      value: item.elevation && item.elevation.trim() ? item.elevation : "\u2014",
     },
   ];
 
+  function handleAddToCart() {
+    if (!item) return;
+    addItem({
+      equipmentId: item.id,
+      name: item.name,
+      category: item.category,
+      pricePerDay: item.pricePerDay,
+      stock: item.stock,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  }
+
+  const mainImg = imgError
+    ? FALLBACK_IMAGE
+    : item.image.startsWith("http")
+      ? item.image
+      : categoryImages[item.category];
+
   return (
     <PageShell>
-      <section className="px-6 py-12 pb-24 md:pb-12">
-        <div className="mx-auto max-w-6xl">
+      <section className="px-4 py-8 pb-24 sm:px-6 md:px-4 lg:py-12">
+        <div className="mx-auto max-w-7xl">
           {/* Back link */}
           <motion.div
             initial={{ opacity: 0, x: -16 }}
@@ -233,120 +285,157 @@ export default function DetailAlatPage() {
             initial="hidden"
             animate="visible"
             variants={staggerContainer}
-            className="grid gap-8 md:grid-cols-2 md:gap-12"
+            className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10"
           >
-            {/* ─── LEFT COLUMN: Hero Image ─── */}
-            <motion.div variants={fadeUp} className="relative">
-              <div className="flex h-64 w-full items-center justify-center overflow-hidden rounded-2xl border border-surface-border bg-bg-elevated md:h-96">
-                <img
-                  src={categoryImages[item.category]}
-                  alt={item.name}
-                  className="h-full w-full object-contain p-6"
-                  loading="eager"
-                />
+            {/* â”€â”€â”€ LEFT COLUMN: Gallery + Info (sticky) â”€â”€â”€ */}
+            <motion.div
+              variants={fadeUp}
+              className="lg:sticky lg:top-24 lg:col-span-5 lg:h-fit"
+            >
+              <div className="relative">
+                {/* Main image */}
+                <div className="relative aspect-[4/3] max-h-[380px] w-full overflow-hidden rounded-2xl border border-surface-border bg-bg-elevated">
+                  <img
+                    src={mainImg}
+                    onError={() => setImgError(true)}
+                    alt={item.name}
+                    className="h-full w-full object-cover object-center"
+                    loading="eager"
+                  />
+                </div>
+                {/* Category floating badge */}
+                <span className="absolute left-3 top-3 inline-block rounded-full bg-paper/90 px-3 py-1 font-archivo text-xs font-medium tracking-wide text-bark shadow-sm backdrop-blur-none">
+                  {item.category}
+                </span>
+                {/* Dots indicator (floating overlay) */}
+                <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/10 px-2.5 py-1 backdrop-blur-sm dark:bg-black/40">
+                  {[0, 1, 2, 3].map((i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setActiveImg(i)}
+                      aria-label={`Foto ${i + 1} ${item.name}`}
+                      className={`h-2.5 w-2.5 cursor-pointer rounded-full transition-all duration-200 ${
+                        activeImg === i
+                          ? "scale-125 bg-accent"
+                          : "bg-text-secondary/60 hover:bg-text-secondary/90"
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
-              {/* Category floating badge */}
-              <span className="absolute left-3 top-3 inline-block rounded-full bg-paper/90 px-3 py-1 font-mono text-xs font-medium tracking-wide text-bark shadow-sm backdrop-blur-none">
-                {item.category}
-              </span>
+
+              {/* Info cards grid 2x2 (below photo) */}
+              <div className="mt-4 grid grid-cols-2 gap-2.5">
+                {infoCards.map((card, i) => (
+                  <InfoCard key={i} {...card} />
+                ))}
+              </div>
             </motion.div>
 
-            {/* ─── RIGHT COLUMN: Information ─── */}
-            <div className="space-y-6">
+            {/* â”€â”€â”€ RIGHT COLUMN: Action & Detail (7/12) â”€â”€â”€ */}
+            <motion.div variants={fadeUp} className="space-y-6 lg:col-span-7">
               {/* Category label */}
-              <motion.div variants={fadeUp}>
-                <span className="inline-block rounded-full bg-accent/10 px-3 py-1 font-mono text-xs font-medium tracking-wide text-accent">
-                  {item.category.toUpperCase()}
-                </span>
-              </motion.div>
+              <span className="inline-block rounded-full bg-accent/10 px-3 py-1 font-archivo text-xs font-medium tracking-wide text-accent">
+                {item.category.toUpperCase()}
+              </span>
 
               {/* Name */}
-              <motion.div variants={fadeUp}>
-                <h1 className="font-display text-3xl font-bold leading-tight text-text-primary md:text-4xl">
-                  {item.name}
-                </h1>
-              </motion.div>
+              <h1 className="font-display text-3xl font-bold leading-tight text-text-primary md:text-4xl">
+                {item.name}
+              </h1>
 
-              {/* Price */}
-              <motion.div variants={fadeUp}>
-                <p className="font-mono text-3xl font-bold text-accent">
+              {/* Price + availability badge */}
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <p className="font-archivo text-3xl font-bold text-accent">
                   Rp{item.pricePerDay.toLocaleString("id-ID")}
                   <span className="text-base font-normal text-text-secondary">
                     {" "}
                     /hari
                   </span>
                 </p>
-              </motion.div>
-
-              {/* Stock badge */}
-              <motion.div variants={fadeUp}>
                 <StockBadge stock={item.stock} />
-              </motion.div>
+              </div>
 
               {/* Rating */}
-              <motion.div variants={fadeUp} className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <StarRating rating={item.rating} size={16} />
                 <span className="font-display text-sm text-text-secondary">
                   {item.rating} ({item.reviewCount} ulasan)
                 </span>
-              </motion.div>
+              </div>
 
-              {/* Info cards grid */}
-              <motion.div
-                variants={fadeUp}
-                className="grid grid-cols-2 gap-3"
+              {/* CTA button â€” above the fold */}
+              <Link
+                href={`/booking/${item.id}`}
+                className="hidden w-full items-center justify-center gap-3 rounded-xl bg-accent px-8 py-4 font-display text-base font-semibold text-paper shadow-sm transition hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 md:flex"
               >
-                {infoCards.map((card, i) => (
-                  <InfoCard key={i} {...card} />
-                ))}
-              </motion.div>
+                <CalendarDays size={20} />
+                Sewa Sekarang
+              </Link>
+
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                className="hidden w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-accent/30 bg-accent/5 px-8 py-4 font-display text-base font-semibold text-accent transition hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 md:flex"
+              >
+                {added ? <Check size={20} /> : <ShoppingCart size={20} />}
+                {added ? "Ditambahkan ke Keranjang" : "Tambah ke Keranjang"}
+              </button>
+
+              {/* Divider */}
+              <div className="h-px w-full bg-surface-border" />
 
               {/* Stock bar */}
-              <motion.div variants={fadeUp} className="space-y-2">
-                <p className="font-mono text-xs tracking-wide text-text-secondary">
+              <div className="space-y-2">
+                <p className="font-archivo text-xs tracking-wide text-text-secondary">
                   STOK
                 </p>
                 <StockBar stock={item.stock} />
-              </motion.div>
-
-              {/* Divider */}
-              <motion.div
-                variants={fadeUp}
-                className="h-px w-full bg-surface-border"
-              />
+              </div>
 
               {/* Description */}
-              <motion.div variants={fadeUp} className="space-y-2">
-                <p className="font-mono text-xs tracking-[0.15em] text-accent">
+              <div className="space-y-2">
+                <p className="font-archivo text-xs tracking-[0.15em] text-accent">
                   DESKRIPSI
                 </p>
                 <p className="text-sm leading-relaxed text-text-secondary">
                   {description}
                 </p>
-              </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
 
-              {/* CTA button */}
+          {/* â”€â”€ FULL-WIDTH REVIEWS ABOVE FOOTER â”€â”€ */}
+          <RatingForm equipmentId={item.id} />
+
+          {/* Mobile sticky CTA */}
+          {typeof document !== "undefined" &&
+            createPortal(
               <motion.div
-                variants={fadeUp}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                transition={springSnappy}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={spring}
+                className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 border-t border-surface-border bg-surface/95 px-4 pt-3 pb-2 backdrop-blur md:hidden"
               >
                 <Link
                   href={`/booking/${item.id}`}
-                  className="flex w-full items-center justify-center gap-3 rounded-xl bg-accent px-8 py-4 font-display text-base font-semibold text-paper shadow-sm transition hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                  className="flex w-full items-center justify-center gap-3 rounded-xl bg-accent px-8 py-3.5 font-display text-base font-semibold text-paper shadow-lg transition hover:bg-accent-hover"
                 >
                   <CalendarDays size={20} />
                   Sewa Sekarang
                 </Link>
-              </motion.div>
-            </div>
-          </motion.div>
-
-          {/* Rating & Testimoni */}
-          <div className="mt-12">
-            <RatingForm equipmentId={item.id} />
-          </div>
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-accent/30 bg-accent/5 px-8 py-3 font-display text-sm font-semibold text-accent transition hover:bg-accent/10"
+                >
+                  {added ? <Check size={18} /> : <ShoppingCart size={18} />}
+                  {added ? "Ditambahkan" : "Tambah ke Keranjang"}
+                </button>
+              </motion.div>,
+              document.body,
+            )}
         </div>
       </section>
     </PageShell>

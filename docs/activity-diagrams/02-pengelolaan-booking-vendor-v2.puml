@@ -1,0 +1,46 @@
+@startuml
+title Activity Diagram - Pengelolaan Booking Vendor v2 (Jejak Rimba)
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica"
+
+|Vendor|
+start
+:Memilih Booking yang Masuk;
+:Menampilkan Detail Booking;
+
+|Sistem|
+:Memverifikasi Kepemilikan Booking;
+if (Booking Milik Vendor?) then ([Ya])
+  :Menampilkan Status Saat Ini;
+  if (Status Booking?) then ([Menunggu Konfirmasi])
+    |Vendor|
+    :Mengonfirmasi Booking;
+    |Sistem|
+    :Memperbarui Status menjadi Dikonfirmasi;
+    :Menandai Booking Menjadi Sedang Berjalan;
+    :Menandai Booking Menjadi Selesai;
+  elseif ([Sedang Berjalan])
+    |Vendor|
+    :Menandai Alat Dikembalikan;
+    |Sistem|
+    :Memperbarui Status menjadi Selesai;
+  elseif ([Dibatalkan])
+    :Menampilkan Pesan Booking Dibatalkan;
+    stop
+  else ([Sudah Selesai])
+    :Menampilkan Pesan Booking Selesai;
+    stop
+  endif
+else ([Tidak])
+  :Menampilkan Error "Akses Ditolak";
+  stop
+endif
+
+fork
+  :Memperbarui Database Booking;
+fork again
+  :Memvalidasi Ulang Cache Halaman;
+end fork
+
+stop
+@enduml

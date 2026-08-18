@@ -5,40 +5,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { HelpCircle, ChevronDown } from "lucide-react";
 import PageShell from "../components/PageShell";
 import { fadeUp, staggerContainer, spring } from "../lib/animations";
+import { useLanguage } from "../lib/i18n";
 
 const faqs = [
-  {
-    q: "Bagaimana cara menyewa alat?",
-    a: "Pilih alat yang diinginkan melalui halaman Katalog, lalu klik Sewa Sekarang. Isi tanggal sewa dan data diri, kemudian konfirmasi pemesanan. Setelah itu, kamu bisa mengambil alat di lokasi mitra penyedia.",
-  },
-  {
-    q: "Di mana lokasi pengambilan alat?",
-    a: "Lokasi pengambilan tergantung mitra penyedia yang dipilih. Tersedia di beberapa titik di Malang Raya: Malang Kota, Batu, dan Lawang. Detail alamat akan diberikan setelah pemesanan dikonfirmasi.",
-  },
-  {
-    q: "Apa yang terjadi jika alat rusak?",
-    a: "Kerusakan akibat pemakaian normal sudah diperhitungkan. Namun, kerusakan akibat kelalaian pengguna (jatuh, terbakar, hilang) akan dikenakan biaya ganti rugi sesuai kesepakatan.",
-  },
-  {
-    q: "Bolehkah memperpanjang masa sewa?",
-    a: "Bisa. Hubungi mitra penyedia melalui kontak yang diberikan minimal H-1 sebelum masa sewa berakhir. Perpanjangan tergantung ketersediaan alat.",
-  },
-  {
-    q: "Bagaimana jika saya telat mengembalikan?",
-    a: "Denda keterlambatan dikenakan sebesar 50% dari harga sewa per hari. Mohon kembalikan alat tepat waktu agar tidak mengganggu penyewa lain.",
-  },
-  {
-    q: "Apakah ada minimal durasi sewa?",
-    a: "Minimal durasi sewa adalah 1 hari. Untuk durasi lebih dari 7 hari, kamu bisa menghubungi mitra untuk mendapatkan harga khusus.",
-  },
-  {
-    q: "Bagaimana cara membatalkan pesanan?",
-    a: "Pembatalan bisa dilakukan melalui halaman Booking atau menghubungi admin. Pembatalan H-1 mendapatkan refund 80%. Pembatalan di hari H tidak mendapat refund.",
-  },
-  {
-    q: "Apakah data saya aman?",
-    a: "Ya. Data pribadi kamu dilindungi dan tidak akan dibagikan ke pihak ketiga tanpa izin. Detail lebih lanjut bisa dilihat di halaman Kebijakan Privasi.",
-  },
+  { qKey: "faq.q1", aKey: "faq.a1" },
+  { qKey: "faq.q2", aKey: "faq.a2" },
+  { qKey: "faq.q3", aKey: "faq.a3" },
+  { qKey: "faq.q4", aKey: "faq.a4" },
+  { qKey: "faq.q5", aKey: "faq.a5" },
+  { qKey: "faq.q6", aKey: "faq.a6" },
+  { qKey: "faq.q7", aKey: "faq.a7" },
+  { qKey: "faq.q8", aKey: "faq.a8" },
 ];
 
 function AccordionItem({ q, a, isOpen, onClick }: { q: string; a: string; isOpen: boolean; onClick: () => void }) {
@@ -78,6 +55,7 @@ function AccordionItem({ q, a, isOpen, onClick }: { q: string; a: string; isOpen
 }
 
 export default function FAQPage() {
+  const { t } = useLanguage();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
@@ -94,7 +72,7 @@ export default function FAQPage() {
             </div>
             <div>
               <p className="font-display text-[11px] font-bold tracking-[0.15em] text-accent">
-                TANYA JAWAB
+                {t("faq.kicker")}
               </p>
               <h1 className="font-display text-2xl font-bold text-text-primary">
                 FAQ
@@ -103,15 +81,15 @@ export default function FAQPage() {
           </motion.div>
 
           <motion.p variants={fadeUp} className="mt-3 font-display text-sm text-text-secondary">
-            Pertanyaan yang sering diajukan tentang layanan Jejak Rimba
+            {t("faq.desc")}
           </motion.p>
 
           <motion.div variants={fadeUp} className="mt-8 space-y-4">
             {faqs.map((faq, i) => (
               <AccordionItem
                 key={i}
-                q={faq.q}
-                a={faq.a}
+                q={t(faq.qKey)}
+                a={t(faq.aKey)}
                 isOpen={openIndex === i}
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
               />

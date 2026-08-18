@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -9,18 +9,21 @@ import {
   EyeOff,
   AlertCircle,
   ArrowLeft,
-  MapPin,
   Tent,
   Store,
 } from "lucide-react";
 import AuthLayout from "../components/AuthLayout";
+import MapLocationPicker, { type LocationPicked } from "../components/MapLocationPicker";
 import { supabase } from "../lib/supabase";
-import { staggerContainer, fadeUp, spring } from "../lib/animations";
+import { completeRegistration } from "../actions/auth";
+import { staggerContainer, fadeUp } from "../lib/animations";
+import { useLanguage } from "../lib/i18n";
 
 type Role = "penyewa" | "vendor";
 
 export default function DaftarPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [step, setStep] = useState<1 | 2>(1);
   const [role, setRole] = useState<Role>("penyewa");
   const [showPassword, setShowPassword] = useState(false);
@@ -37,13 +40,20 @@ export default function DaftarPage() {
   const [businessDesc, setBusinessDesc] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [address, setAddress] = useState("");
+  const [location, setLocation] = useState<LocationPicked>({
+    lat: -7.9666,
+    lng: 112.6326,
+    address: "",
+    city: "Malang",
+    error: null,
+  });
 
   function validateStep1(): string | null {
-    if (!fullName.trim()) return "Nama lengkap wajib diisi.";
-    if (!email.trim()) return "Email wajib diisi.";
-    if (!phone.trim()) return "Nomor telepon wajib diisi.";
-    if (password.length < 8) return "Password minimal 8 karakter.";
-    if (password !== confirmPassword) return "Konfirmasi password tidak cocok.";
+    if (!fullName.trim()) return t("auth.error_nama");
+    if (!email.trim()) return t("auth.error_email");
+    if (!phone.trim()) return t("auth.error_telepon");
+    if (password.length < 8) return t("auth.error_pass_panjang");
+    if (password !== confirmPassword) return t("auth.error_pass_cocok");
     return null;
   }
 
@@ -52,6 +62,9 @@ export default function DaftarPage() {
     business_description: string;
     whatsapp_number: string;
     address: string;
+    lat: number;
+    lng: number;
+    city: string;
   }) {
     setLoading(true);
     setError(null);
@@ -59,46 +72,48 @@ export default function DaftarPage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: fullName,
+          role,
+        },
+      },
     });
 
     if (signUpError || !data.user) {
       setLoading(false);
-      setError(signUpError?.message ?? "Gagal membuat akun. Coba lagi.");
+      setError(signUpError?.message ?? t("auth.error_buat"));
       return;
     }
 
-    const { error: profileError } = await supabase.from("profiles").insert({
-      id: data.user.id,
-      full_name: fullName,
-      phone_number: phone,
+    // Simpan profile + vendor via service role (bypass RLS karena user baru
+    // belum punya session). Kalau email confirmation wajib, akun sudah dibuat
+    // tapi user harus konfirmasi dulu sebelum bisa masuk.
+    const res = await completeRegistration({
+      userId: data.user.id,
+      fullName,
+      phone,
       role,
+      vendor_data:
+        role === "vendor" && extraVendorData
+          ? {
+              business_name: extraVendorData.business_name,
+              business_description: extraVendorData.business_description,
+              whatsapp_number: extraVendorData.whatsapp_number,
+              address: extraVendorData.address,
+              city: extraVendorData.city,
+              lat: extraVendorData.lat,
+              lng: extraVendorData.lng,
+            }
+          : undefined,
     });
 
-    if (profileError) {
-      setLoading(false);
-      setError("Akun dibuat, tapi gagal menyimpan profil: " + profileError.message);
+    setLoading(false);
+    if (res.error) {
+      setError(res.error);
       return;
     }
 
-    if (role === "vendor" && extraVendorData) {
-      const { error: vendorError } = await supabase.from("vendors").insert({
-        profile_id: data.user.id,
-        business_name: extraVendorData.business_name,
-        business_description: extraVendorData.business_description,
-        whatsapp_number: extraVendorData.whatsapp_number,
-        address: extraVendorData.address,
-        latitude: -7.9666,
-        longitude: 112.6326,
-      });
-
-      if (vendorError) {
-        setLoading(false);
-        setError("Profil dibuat, tapi gagal menyimpan data usaha: " + vendorError.message);
-        return;
-      }
-    }
-
-    setLoading(false);
     router.push("/");
   }
 
@@ -121,7 +136,7 @@ export default function DaftarPage() {
   function handleStep2Submit(e: React.FormEvent) {
     e.preventDefault();
     if (!businessName.trim() || !address.trim() || !whatsapp.trim()) {
-      setError("Nama usaha, alamat, dan nomor WhatsApp wajib diisi.");
+      setError(t("auth.error_bisnis"));
       return;
     }
     setError(null);
@@ -130,6 +145,9 @@ export default function DaftarPage() {
       business_description: businessDesc,
       whatsapp_number: whatsapp,
       address,
+      lat: location.lat,
+      lng: location.lng,
+      city: location.city,
     });
   }
 
@@ -147,39 +165,37 @@ export default function DaftarPage() {
           </motion.div>
           <motion.p
             variants={fadeUp}
-            className="mb-1 font-mono text-xs text-text-secondary"
+            className="mb-1 font-archivo text-xs text-text-secondary"
           >
-            Langkah 1 dari {role === "vendor" ? "2" : "1"}
+            {t("auth.langkah")} 1 {t("auth.dari")} {role === "vendor" ? "2" : "1"}
           </motion.p>
 
           <motion.h1
             variants={fadeUp}
             className="font-display text-2xl font-bold text-text-primary"
           >
-            Buat akun baru
+            {t("auth.buat_akun")}
           </motion.h1>
 
           {/* Role toggle */}
           <motion.div variants={fadeUp} className="mt-6 grid grid-cols-2 gap-3">
-            <motion.button
-              type="button"
-              onClick={() => setRole("penyewa")}
-              whileTap={{ scale: 0.97 }}
-              className={`flex flex-col items-center gap-2 rounded-2xl border-2 px-4 py-4 transition ${
-                role === "penyewa"
-                  ? "border-accent bg-accent/10"
-                  : "border-surface-border bg-surface hover:border-accent/40"
-              }`}
-            >
-              <Tent size={20} className={role === "penyewa" ? "text-accent" : "text-text-secondary"} />
-              <span className={`text-sm font-semibold ${role === "penyewa" ? "text-accent" : "text-text-primary"}`}>
-                Penyewa
-              </span>
-            </motion.button>
+              <motion.button
+                type="button"
+                onClick={() => setRole("penyewa")}
+                className={`flex flex-col items-center gap-2 rounded-2xl border-2 px-4 py-4 transition ${
+                  role === "penyewa"
+                    ? "border-accent bg-accent/10"
+                    : "border-surface-border bg-surface hover:border-accent/40"
+                }`}
+              >
+                <Tent size={20} className={role === "penyewa" ? "text-accent" : "text-text-secondary"} />
+                <span className={`text-sm font-semibold ${role === "penyewa" ? "text-accent" : "text-text-primary"}`}>
+                  {t("profil.mode_penyewa")}
+                </span>
+              </motion.button>
             <motion.button
               type="button"
               onClick={() => setRole("vendor")}
-              whileTap={{ scale: 0.97 }}
               className={`flex flex-col items-center gap-2 rounded-2xl border-2 px-4 py-4 transition ${
                 role === "vendor"
                   ? "border-accent bg-accent/10"
@@ -188,36 +204,36 @@ export default function DaftarPage() {
             >
               <Store size={20} className={role === "vendor" ? "text-accent" : "text-text-secondary"} />
               <span className={`text-sm font-semibold ${role === "vendor" ? "text-accent" : "text-text-primary"}`}>
-                Vendor
+                {t("profil.mode_vendor")}
               </span>
             </motion.button>
           </motion.div>
 
           <motion.form variants={fadeUp} onSubmit={handleStep1Submit} className="mt-6 space-y-4">
-            <Field label="Nama Lengkap" value={fullName} onChange={setFullName} placeholder="Masukkan nama lengkap" />
-            <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="contoh@email.com" />
-            <Field label="Nomor Telepon" value={phone} onChange={setPhone} placeholder="0812xxxx" />
+            <Field label={t("auth.nama_lengkap")} value={fullName} onChange={setFullName} placeholder={t("auth.nama_lengkap_placeholder")} />
+            <Field label={t("auth.email")} type="email" value={email} onChange={setEmail} placeholder={t("auth.email_placeholder")} />
+            <Field label={t("auth.nomor_telepon")} value={phone} onChange={setPhone} placeholder={t("auth.telepon_placeholder")} />
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-text-primary">Password</label>
+              <label className="mb-1.5 block text-sm font-semibold text-text-primary">{t("auth.password")}</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min. 8 karakter"
+                  placeholder={t("auth.password_min")}
                   className="w-full rounded-xl border border-surface-border bg-surface px-4 py-3 pr-11 text-sm text-text-primary placeholder:text-text-secondary/60 outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary transition hover:text-text-primary"
-                  aria-label={showPassword ? "Sembunyikan" : "Tampilkan"}
+                  className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl text-text-secondary transition hover:bg-surface hover:text-text-primary"
+                  aria-label={showPassword ? t("auth.sembunyikan") : t("auth.tampilkan")}
                 >
                   {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
             </div>
-            <Field label="Konfirmasi Password" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={setConfirmPassword} placeholder="Ulangi password" />
+            <Field label={t("auth.konfirmasi_password")} type={showPassword ? "text" : "password"} value={confirmPassword} onChange={setConfirmPassword} placeholder={t("auth.ulangi_password")} />
 
             {error && (
               <div className="flex items-start gap-2 rounded-xl bg-bg-elevated px-4 py-3">
@@ -229,16 +245,13 @@ export default function DaftarPage() {
             <motion.button
               type="submit"
               disabled={loading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              transition={spring}
               className="w-full rounded-xl bg-accent py-3.5 text-sm font-semibold text-paper transition hover:bg-accent-hover disabled:opacity-60"
             >
               {loading
-                ? "Memproses..."
+                ? t("auth.memproses")
                 : role === "vendor"
-                  ? "Lanjutkan"
-                  : "Buat Akun"}
+                  ? t("auth.lanjutkan")
+                  : t("auth.buat_akun_btn")}
             </motion.button>
           </motion.form>
         </motion.div>
@@ -253,7 +266,7 @@ export default function DaftarPage() {
             onClick={() => setStep(1)}
             className="mb-6 flex items-center gap-1.5 text-sm font-medium text-text-secondary transition hover:text-text-primary"
           >
-            <ArrowLeft size={16} /> Kembali
+            <ArrowLeft size={16} /> {t("auth.kembali")}
           </motion.button>
 
           <motion.div variants={fadeUp} className="mb-6 flex items-center gap-2">
@@ -262,40 +275,40 @@ export default function DaftarPage() {
           </motion.div>
           <motion.p
             variants={fadeUp}
-            className="mb-1 font-mono text-xs text-text-secondary"
+            className="mb-1 font-archivo text-xs text-text-secondary"
           >
-            Langkah 2 dari 2
+            {t("auth.langkah")} 2 {t("auth.dari")} 2
           </motion.p>
 
           <motion.h1
             variants={fadeUp}
             className="font-display text-2xl font-bold text-text-primary"
           >
-            Informasi Bisnis
+            {t("auth.info_bisnis")}
           </motion.h1>
           <motion.p
             variants={fadeUp}
             className="mt-1 text-sm text-text-secondary"
           >
-            Ceritain sedikit soal usaha persewaan alatmu.
+            {t("auth.info_bisnis_desc")}
           </motion.p>
 
           <motion.form variants={fadeUp} onSubmit={handleStep2Submit} className="mt-6 space-y-4">
-            <Field label="Nama Bisnis" value={businessName} onChange={setBusinessName} placeholder="Contoh: Rimba Gear Malang" />
+            <Field label={t("auth.nama_bisnis")} value={businessName} onChange={setBusinessName} placeholder={t("auth.nama_bisnis_placeholder")} />
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-text-primary">
-                Deskripsi Bisnis <span className="text-text-secondary">(opsional)</span>
+                {t("auth.deskripsi_bisnis")} <span className="text-text-secondary">{t("auth.opsional")}</span>
               </label>
               <textarea
                 value={businessDesc}
                 onChange={(e) => setBusinessDesc(e.target.value)}
-                placeholder="Jelaskan layanan atau alat yang kamu sewakan..."
+                placeholder={t("auth.deskripsi_bisnis_placeholder")}
                 rows={3}
-                className="w-full rounded-xl border border-surface-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-secondary/60 outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
+                className="w-full resize-none rounded-xl border border-surface-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-secondary/60 outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-text-primary">Nomor WhatsApp</label>
+              <label className="mb-1.5 block text-sm font-semibold text-text-primary">{t("auth.whatsapp")}</label>
               <div className="flex overflow-hidden rounded-xl border border-surface-border bg-surface transition focus-within:border-accent focus-within:ring-1 focus-within:ring-accent">
                 <span className="flex items-center bg-bg-elevated px-3 text-sm text-text-secondary">+62</span>
                 <input
@@ -307,24 +320,21 @@ export default function DaftarPage() {
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-text-primary">Alamat Bisnis</label>
+              <label className="mb-1.5 block text-sm font-semibold text-text-primary">{t("auth.alamat_bisnis")}</label>
               <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Jl. Raya Rimba No. 123, Malang"
+                placeholder={t("auth.alamat_placeholder")}
                 rows={2}
-                className="w-full rounded-xl border border-surface-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-secondary/60 outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
+                className="w-full resize-none rounded-xl border border-surface-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-text-secondary/60 outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-text-primary">Titik Lokasi</label>
-              <button
-                type="button"
-                className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-surface-border bg-bg-elevated py-8 text-text-secondary transition hover:border-accent hover:text-accent"
-              >
-                <MapPin size={22} />
-                <span className="text-xs">Ketuk untuk atur lokasi di peta</span>
-              </button>
+              <label className="mb-1.5 block text-sm font-semibold text-text-primary">{t("auth.titik_lokasi")}</label>
+              <MapLocationPicker
+                onChange={setLocation}
+                initial={location}
+              />
             </div>
 
             {error && (
@@ -337,12 +347,9 @@ export default function DaftarPage() {
             <motion.button
               type="submit"
               disabled={loading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              transition={spring}
               className="w-full rounded-xl bg-accent py-3.5 text-sm font-semibold text-paper transition hover:bg-accent-hover disabled:opacity-60"
             >
-              {loading ? "Memproses..." : "Selesaikan Pendaftaran"}
+              {loading ? t("auth.memproses") : t("auth.selesai_daftar")}
             </motion.button>
           </motion.form>
         </motion.div>
@@ -351,19 +358,19 @@ export default function DaftarPage() {
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.5 }}
+        transition={{ duration: 0.18 }}
         className="mt-8 text-center text-sm text-text-secondary"
       >
-        Sudah punya akun?{" "}
+        {t("auth.sudah_punya_akun")}{" "}
         <Link href="/masuk" className="font-semibold text-accent hover:underline">
-          Masuk di sini
+          {t("auth.masuk_di_sini")}
         </Link>
       </motion.p>
     </AuthLayout>
   );
 }
 
-/* ── Reusable input field ── */
+/* â”€â”€ Reusable input field â”€â”€ */
 function Field({
   label,
   value,

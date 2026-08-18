@@ -1,3 +1,7 @@
+﻿"use client";
+
+import { useLanguage } from "../lib/i18n";
+
 export default function ComingSoon({
   title,
   description,
@@ -5,13 +9,14 @@ export default function ComingSoon({
   title: string;
   description?: string;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-6 text-center">
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-dashed border-surface-border">
-        <span className="font-mono text-xs text-text-secondary">JR</span>
+        <span className="font-archivo text-xs text-text-secondary">JR</span>
       </div>
-      <p className="font-mono text-xs uppercase tracking-widest text-accent">
-        Dalam Pengembangan
+      <p className="font-archivo text-xs uppercase tracking-widest text-accent">
+        {t("comingsoon.badge")}
       </p>
       <h1 className="mt-2 font-display text-2xl font-bold text-text-primary">
         {title}

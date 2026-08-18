@@ -1,0 +1,45 @@
+@startuml
+title Activity Diagram - Pengembalian Alat & Ulasan v2 (Jejak Rimba)
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica"
+
+|Vendor|
+start
+:Memverifikasi Pengembalian Alat;
+:Mencatat Kondisi Alat yang Dikembalikan;
+:Menyetujui Pengembalian;
+
+|Sistem|
+:Memperbarui Status Booking menjadi Selesai;
+:Menambah Stok Alat;
+:Menandai Booking Dapat Diulas;
+
+|Pelanggan|
+:Memilih Menu Beri Ulasan;
+:Mengisi Rating & Komentar;
+|Sistem|
+:Memverifikasi Status Booking;
+if (Booking Selesai?) then ([Ya])
+  :Memeriksa Kepemilikan Booking;
+  if (Booking Milik User?) then ([Ya])
+    :Memeriksa Review Duplikat;
+    if (Sudah Pernah Review?) then ([Belum])
+      :Menyimpan Ulasan;
+      :Menghitung Ulang Rata-Rata Rating;
+      :Memperbarui Rating Alat;
+      :Menampilkan Ulasan Berhasil;
+    else ([Sudah])
+      :Menampilkan Error "Ulasan Sudah Ada";
+      stop
+    endif
+  else ([Tidak])
+    :Menampilkan Error "Akses Ditolak";
+    stop
+  endif
+else ([Belum Selesai])
+  :Menampilkan Error "Selesaikan Sewa Dahulu";
+  stop
+endif
+
+stop
+@enduml

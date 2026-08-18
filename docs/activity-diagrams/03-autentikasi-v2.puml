@@ -1,0 +1,58 @@
+@startuml
+title Activity Diagram - Autentikasi User v2 (Jejak Rimba)
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica"
+
+|Pengguna|
+start
+if (Memiliki Akun?) then ([Tidak])
+  :Memilih Menu Daftar;
+  :Mengisi Data Registrasi;
+  :Memilih Role (Penyewa / Vendor);
+  |Sistem|
+  :Memvalidasi Data Registrasi;
+  if (Data Valid?) then ([Ya])
+    :Membuat Akun di Auth;
+    :Menyimpan Profil Pengguna;
+    if (Role Vendor?) then ([Ya])
+      :Menyimpan Data Usaha Vendor;
+    else ([Penyewa])
+    endif
+    :Mengarahkan ke Beranda;
+  else ([Tidak])
+    :Menampilkan Pesan Error Registrasi;
+    stop
+  endif
+else ([Ya])
+  :Memilih Menu Masuk;
+  :Memasukkan Email & Password;
+  |Sistem|
+  :Memverifikasi Kredensial;
+  if (Kredensial Benar?) then ([Ya])
+    if (Login via Google?) then ([Ya])
+      :Mengarahkan ke OAuth Google;
+      :Menerima Callback & Membuat Sesi;
+    else ([Email / Password])
+    endif
+    :Membuat Sesi Login;
+    :Mengarahkan ke Halaman Akun;
+  else ([Tidak])
+    :Menampilkan Error "Email atau Password Salah";
+    stop
+  endif
+endif
+
+|Pengguna|
+:Menggunakan Aplikasi;
+
+if (Ingin Keluar?) then ([Ya])
+  |Sistem|
+  :Menghapus Sesi;
+  :Mengarahkan ke Beranda;
+  stop
+else ([Tidak])
+  :Melanjutkan Aktivitas;
+endif
+
+stop
+@enduml

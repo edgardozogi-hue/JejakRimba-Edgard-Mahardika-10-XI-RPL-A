@@ -1,22 +1,38 @@
 "use client";
 
-import { Suspense, useState, useMemo } from "react";
+import { Suspense, useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Tent,
   Calendar,
   User,
   Phone,
-  FileText,
   Clock,
   ArrowLeft,
   AlertTriangle,
+  Loader,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { getEquipmentById } from "../../../actions/equipment";
+import { createBooking } from "../../../actions/booking";
+import { createSnapToken } from "../../../actions/midtrans";
+import { loadMidtransScript } from "../../../lib/midtrans";
+import type { EquipmentFrontend } from "../../../lib/database.types";
 import PageShell from "../../../components/PageShell";
-import { equipmentList } from "../../../lib/data";
-import { staggerContainer, fadeUp, spring } from "../../../lib/animations";
+import { staggerContainer, fadeUp } from "../../../lib/animations";
+import { useLanguage } from "../../../lib/i18n";
+
+type SnapHandlers = {
+  onSuccess: () => void;
+  onPending: () => void;
+  onError: () => void;
+  onClose: () => void;
+};
+
+interface WindowWithSnap {
+  snap: { pay: (token: string, handlers: SnapHandlers) => void };
+}
 
 // ── Helpers ──
 
@@ -38,21 +54,30 @@ function formatDate(dateStr: string) {
 function KonfirmasiContent() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { t } = useLanguage();
 
   const start = searchParams.get("start") ?? "";
   const end = searchParams.get("end") ?? "";
   const daysStr = searchParams.get("days") ?? "0";
   const days = parseInt(daysStr, 10) || 0;
 
-  const equipment = useMemo(
-    () => equipmentList.find((e) => e.id === params.id),
-    [params.id],
-  );
+  const [equipment, setEquipment] = useState<EquipmentFrontend | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [nama, setNama] = useState("");
   const [noHp, setNoHp] = useState("");
   const [catatan, setCatatan] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    getEquipmentById(params.id as string).then((data) => {
+      setEquipment(data);
+      setLoading(false);
+    });
+  }, [params.id]);
 
   const total = useMemo(
     () => (equipment ? days * equipment.pricePerDay : 0),
@@ -61,23 +86,97 @@ function KonfirmasiContent() {
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
-    if (!nama.trim()) errs.nama = "Nama lengkap wajib diisi";
-    if (!noHp.trim()) errs.noHp = "No HP wajib diisi";
+    if (!nama.trim()) errs.nama = t("booking.err_nama");
+    if (!noHp.trim()) errs.noHp = t("booking.err_hp");
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
 
-  function handleBayar() {
+  async function handleBayar() {
     if (!validate() || !equipment) return;
-    const qs = new URLSearchParams({
-      nama: nama.trim(),
-      hp: noHp.trim(),
-      start,
-      end,
-      days: String(days),
-      equipment: equipment.id,
+    setSubmitting(true);
+    setSubmitError(null);
+
+    // 1. Create booking
+    const result = await createBooking({
+      equipment_id: equipment.id,
+      quantity: 1,
+      start_date: start,
+      end_date: end,
+      notes: catatan || undefined,
     });
-    window.location.href = `/booking/${equipment.id}/status?${qs}`;
+
+    if (result.error) {
+      setSubmitError(result.error);
+      setSubmitting(false);
+      return;
+    }
+
+    const bookingId = result.bookingId!;
+
+    // 2. Cek apakah Midtrans dikonfigurasi
+    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY;
+    if (!clientKey || clientKey.includes("xxxx")) {
+      // Fallback: langsung redirect ke status (tanpa bayar)
+      router.push(`/booking/${bookingId}/status`);
+      return;
+    }
+
+    // 3. Dapatkan Snap token
+    const snapResult = await createSnapToken(bookingId);
+
+    if (snapResult.error) {
+      setSubmitError(snapResult.error);
+      setSubmitting(false);
+      return;
+    }
+
+    // 4. Load Snap script & buka popup
+    try {
+      await loadMidtransScript();
+      (window as unknown as WindowWithSnap).snap.pay(snapResult.token!, {
+        onSuccess: () => {
+          router.push(`/booking/${bookingId}/status`);
+        },
+        onPending: () => {
+          router.push(`/booking/${bookingId}/status`);
+        },
+        onError: () => {
+          setSubmitError(t("booking.bayar_gagal"));
+          setSubmitting(false);
+        },
+        onClose: () => {
+          setSubmitting(false);
+        },
+      });
+    } catch {
+      // Fallback: redirect_url
+      if (snapResult.redirect_url) {
+        window.location.assign(snapResult.redirect_url);
+      } else {
+        router.push(`/booking/${bookingId}/status`);
+      }
+    }
+  }
+
+  // ── Loading state ──
+
+  if (loading) {
+    return (
+      <PageShell showNav={false}>
+        <div className="mx-auto max-w-5xl px-6 py-8">
+          <div className="h-4 w-24 animate-pulse rounded bg-surface-border" />
+          <div className="mt-6 grid gap-8 lg:grid-cols-5">
+            <div className="space-y-5 lg:col-span-3">
+              <div className="h-80 animate-pulse rounded-2xl bg-surface" />
+            </div>
+            <div className="lg:col-span-2">
+              <div className="h-72 animate-pulse rounded-2xl bg-surface" />
+            </div>
+          </div>
+        </div>
+      </PageShell>
+    );
   }
 
   // ── 404 state ──
@@ -96,24 +195,21 @@ function KonfirmasiContent() {
               <AlertTriangle size={40} className="text-text-secondary" />
             </div>
             <h1 className="font-display text-2xl font-bold text-text-primary">
-              Alat Tidak Ditemukan
+              {t("booking.not_found_title")}
             </h1>
             <p className="mt-2 text-sm text-text-secondary">
-              Alat dengan ID &ldquo;{params.id}&rdquo; tidak ditemukan.
+              {t("booking.not_found_desc").replace("{id}", params.id as string)}
             </p>
           </motion.div>
 
           <motion.div variants={fadeUp} className="mt-8">
             <Link href="/katalog">
-              <motion.span
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                transition={spring}
+              <span
                 className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-paper transition hover:bg-accent-hover"
               >
                 <ArrowLeft size={18} />
-                Lihat Katalog
-              </motion.span>
+                {t("booking.lihat_katalog")}
+              </span>
             </Link>
           </motion.div>
         </motion.div>
@@ -138,13 +234,13 @@ function KonfirmasiContent() {
             className="mb-3 inline-flex items-center gap-1.5 font-display text-sm font-medium text-text-secondary transition hover:text-text-primary"
           >
             <ArrowLeft size={16} />
-            Kembali
+            {t("common.back")}
           </Link>
           <p className="font-display text-[11px] font-bold tracking-[0.15em] text-accent">
-            KONFIRMASI PESANAN
+            {t("booking.konfirmasi_kicker")}
           </p>
           <h1 className="mt-1 font-display text-2xl font-bold text-text-primary">
-            Lengkapi Data Sewa
+            {t("booking.lengkapi_data")}
           </h1>
         </motion.div>
 
@@ -155,7 +251,7 @@ function KonfirmasiContent() {
               <div className="flex items-center gap-2 border-b border-surface-border pb-3">
                 <User size={16} className="text-accent" />
                 <h2 className="font-display text-base font-semibold text-text-primary">
-                  Data Penyewa
+                  {t("booking.data_penyewa")}
                 </h2>
               </div>
 
@@ -166,7 +262,7 @@ function KonfirmasiContent() {
                     htmlFor="konf-nama"
                     className="mb-1.5 block font-display text-[13px] font-semibold text-text-primary"
                   >
-                    Nama Lengkap <span className="text-red">*</span>
+                    {t("auth.nama_lengkap")} <span className="text-red">*</span>
                   </label>
                   <input
                     id="konf-nama"
@@ -182,7 +278,7 @@ function KonfirmasiContent() {
                         });
                       }
                     }}
-                    placeholder="Masukkan nama lengkap"
+                    placeholder={t("auth.nama_lengkap_placeholder")}
                     className={`w-full rounded-xl border bg-bg px-4 py-[13px] font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-1 focus:ring-accent/30 ${
                       errors.nama ? "border-red" : "border-surface-border"
                     }`}
@@ -199,7 +295,7 @@ function KonfirmasiContent() {
                     className="flex items-center gap-1.5 text-sm font-medium text-text-primary"
                   >
                     <Phone size={14} className="text-text-secondary" />
-                    No HP <span className="text-red">*</span>
+                    {t("booking.no_hp")} <span className="text-red">*</span>
                   </label>
                   <input
                     id="konf-hp"
@@ -215,7 +311,7 @@ function KonfirmasiContent() {
                         });
                       }
                     }}
-                    placeholder="08xxxxxxxxxx"
+                    placeholder={t("booking.hp_placeholder")}
                     className={`w-full rounded-xl border bg-bg px-4 py-[13px] font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-1 focus:ring-accent/30 ${
                       errors.noHp ? "border-red" : "border-surface-border"
                     }`}
@@ -229,7 +325,7 @@ function KonfirmasiContent() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1.5 block font-display text-[13px] font-semibold text-text-primary">
-                      Tanggal Ambil
+                      {t("booking.tanggal_ambil")}
                     </label>
                     <div className="flex items-center gap-2 rounded-xl border border-surface-border bg-bg px-4 py-[13px]">
                       <Calendar size={14} className="shrink-0 text-text-secondary" />
@@ -240,7 +336,7 @@ function KonfirmasiContent() {
                   </div>
                   <div>
                     <label className="mb-1.5 block font-display text-[13px] font-semibold text-text-primary">
-                      Tanggal Kembali
+                      {t("booking.tanggal_kembali")}
                     </label>
                     <div className="flex items-center gap-2 rounded-xl border border-surface-border bg-bg px-4 py-[13px]">
                       <Calendar size={14} className="shrink-0 text-text-secondary" />
@@ -257,9 +353,9 @@ function KonfirmasiContent() {
                     htmlFor="konf-catatan"
                     className="mb-1.5 block font-display text-[13px] font-semibold text-text-primary"
                   >
-                    Catatan
+                    {t("booking.catatan")}
                     <span className="ml-1 text-xs font-normal text-text-secondary">
-                      (opsional)
+                      {t("auth.opsional")}
                     </span>
                   </label>
                   <textarea
@@ -267,7 +363,7 @@ function KonfirmasiContent() {
                     rows={3}
                     value={catatan}
                     onChange={(e) => setCatatan(e.target.value)}
-                    placeholder="Catatan tambahan (opsional)"
+                    placeholder={t("booking.catatan_placeholder")}
                     className="w-full resize-none rounded-xl border border-surface-border bg-bg px-4 py-[13px] font-display text-sm text-text-primary outline-none transition placeholder:text-text-secondary/50 focus:border-accent focus:ring-1 focus:ring-accent/30"
                   />
                 </div>
@@ -277,24 +373,35 @@ function KonfirmasiContent() {
               <div className="mt-5 lg:hidden">
                 <div className="mb-3 rounded-xl bg-bg-elevated p-4">
                   <div className="flex items-center justify-between font-display text-sm">
-                    <span className="text-text-secondary">Total</span>
+                    <span className="text-text-secondary">{t("booking.total")}</span>
                     <span className="font-display text-lg font-bold text-accent">
                       {formatPrice(total)}
                     </span>
                   </div>
                   <div className="mt-1 flex items-center justify-between text-xs text-text-secondary">
-                    <span>{days} hari</span>
-                    <span>{formatPrice(equipment.pricePerDay)}/hari</span>
+                    <span>{days} {t("booking.hari")}</span>
+                    <span>{formatPrice(equipment.pricePerDay)}{t("booking.per_hari")}</span>
                   </div>
                 </div>
+                {submitError && (
+                  <div className="mb-3 flex items-start gap-2 rounded-xl bg-red/10 px-4 py-3 text-sm text-red">
+                    <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                    <span>{submitError}</span>
+                  </div>
+                )}
                 <motion.button
                   onClick={handleBayar}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={spring}
-                  className="w-full cursor-pointer rounded-xl bg-accent px-6 py-[15px] font-display text-sm font-bold text-paper shadow-sm transition hover:bg-accent-hover active:scale-[0.98]"
+                  disabled={submitting}
+                  className="w-full cursor-pointer rounded-xl bg-accent px-6 py-[15px] font-display text-sm font-bold text-paper shadow-sm transition hover:bg-accent-hover active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Konfirmasi &amp; Bayar
+                  {submitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader size={16} className="animate-spin" />
+                      {t("booking.memproses")}
+                    </span>
+                  ) : (
+                    t("booking.konfirmasi_bayar")
+                  )}
                 </motion.button>
               </div>
             </div>
@@ -308,7 +415,7 @@ function KonfirmasiContent() {
                   <Tent size={16} className="text-accent" />
                 </div>
                 <h2 className="font-display text-base font-semibold text-text-primary">
-                  Ringkasan Pesanan
+                  {t("booking.ringkasan")}
                 </h2>
               </div>
 
@@ -329,17 +436,17 @@ function KonfirmasiContent() {
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 font-display text-sm text-text-secondary">
                     <Clock size={14} />
-                    Durasi Sewa
+                    {t("booking.durasi_sewa")}
                   </span>
                   <span className="font-display text-sm font-semibold text-text-primary">
-                    {days} hari
+                    {days} {t("booking.hari")}
                   </span>
                 </div>
 
                 {/* Harga per hari */}
                 <div className="flex items-center justify-between">
                   <span className="font-display text-sm text-text-secondary">
-                    Harga per hari
+                    {t("booking.harga_per_hari")}
                   </span>
                   <span className="font-display text-sm font-semibold text-text-primary">
                     {formatPrice(equipment.pricePerDay)}
@@ -351,13 +458,13 @@ function KonfirmasiContent() {
                 {/* Tanggal */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between font-display text-xs">
-                    <span className="text-text-secondary">Ambil</span>
+                    <span className="text-text-secondary">{t("booking.ambil_short")}</span>
                     <span className="font-semibold text-text-primary">
                       {start ? formatDate(start) : "\u2014"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between font-display text-xs">
-                    <span className="text-text-secondary">Kembali</span>
+                    <span className="text-text-secondary">{t("booking.kembali_short")}</span>
                     <span className="font-semibold text-text-primary">
                       {end ? formatDate(end) : "\u2014"}
                     </span>
@@ -369,7 +476,7 @@ function KonfirmasiContent() {
                 {/* Total */}
                 <div className="flex items-center justify-between">
                   <span className="font-display text-sm font-bold text-text-primary">
-                    Total
+                    {t("booking.total")}
                   </span>
                   <span className="font-display text-xl font-bold text-accent">
                     {formatPrice(total)}
@@ -377,15 +484,28 @@ function KonfirmasiContent() {
                 </div>
               </div>
 
+              {/* Submit error */}
+              {submitError && (
+                <div className="mt-3 flex items-start gap-2 rounded-xl bg-red/10 px-4 py-3 text-sm text-red">
+                  <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                  <span>{submitError}</span>
+                </div>
+              )}
+
               {/* CTA */}
               <motion.button
                 onClick={handleBayar}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                transition={spring}
-                className="mt-5 w-full cursor-pointer rounded-xl bg-accent px-6 py-[15px] font-display text-sm font-bold text-paper shadow-sm transition hover:bg-accent-hover active:scale-[0.98]"
+                disabled={submitting}
+                className="mt-5 w-full cursor-pointer rounded-xl bg-accent px-6 py-[15px] font-display text-sm font-bold text-paper shadow-sm transition hover:bg-accent-hover active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Konfirmasi &amp; Bayar
+                {submitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader size={16} className="animate-spin" />
+                    {t("booking.memproses")}
+                  </span>
+                ) : (
+                  t("booking.konfirmasi_bayar")
+                )}
               </motion.button>
             </div>
           </motion.div>

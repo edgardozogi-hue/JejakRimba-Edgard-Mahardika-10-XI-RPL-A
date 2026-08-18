@@ -1,0 +1,50 @@
+@startuml
+title Tabel Referensi - Autentikasi User (Jejak Rimba)
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica"
+skinparam noteBackgroundColor #F8F9FA
+skinparam noteBorderColor #4A5568
+
+note as T1
+**Tabel Jenis Autentikasi**
+|===
+| Metode | Deskripsi | Role Dukungan
+| Email + Password | Registrasi & login standar | Penyewa, Vendor
+| Google OAuth | Login via akun Google | Penyewa, Vendor
+| Reset Password | Kirim email reset ke user | Penyewa, Vendor
+|===
+end note
+
+note as T2
+**Tabel Flow Registrasi per Role**
+|===
+| Role | Tabel yang DiIsi | Data Tambahan
+| Penyewa | auth.users, profiles | full_name, phone_number
+| Vendor | auth.users, profiles, vendors | business_name, whatsapp, address, lat/long
+|===
+end note
+
+note as T3
+**Tabel Decision Points**
+|===
+| Decision Point | Guard True | Guard False
+| Memiliki Akun? | [Tidak] → flow daftar | [Ya] → flow login
+| Data Valid? | [Ya] → buat akun | [Tidak] → error
+| Role Vendor? | [Ya] → simpan data usaha | [Penyewa] → skip
+| Kredensial Benar? | [Ya] → buat sesi | [Tidak] → error login
+| Login Google? | [Ya] → redirect OAuth | [Tidak] → lanjut
+| Ingin Keluar? | [Ya] → hapus sesi | [Tidak] → lanjut app
+|===
+end note
+
+note as T4
+**Tabel Entitas Data**
+|===
+| Entitas | Field Penting
+| auth.users | id, email, encrypted_password, email_confirmed_at
+| profiles | id, full_name, phone_number, role, avatar_url
+| vendors | id, profile_id, business_name, whatsapp_number, address, is_active
+|===
+end note
+
+@enduml

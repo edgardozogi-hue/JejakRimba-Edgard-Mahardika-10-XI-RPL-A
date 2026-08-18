@@ -5,16 +5,18 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Home, Compass, Ticket, User } from "lucide-react";
 import { spring } from "../lib/animations";
+import { useLanguage } from "../lib/i18n";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Beranda", icon: Home },
-  { href: "/katalog", label: "Katalog", icon: Compass },
-  { href: "/booking", label: "Booking", icon: Ticket },
-  { href: "/profil", label: "Profil", icon: User },
+  { href: "/", labelKey: "nav.beranda", icon: Home },
+  { href: "/katalog", labelKey: "nav.katalog", icon: Compass },
+  { href: "/booking", labelKey: "nav.booking", icon: Ticket },
+  { href: "/profil", labelKey: "nav.profil_bottom", icon: User },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-border bg-nav-bg md:hidden">
@@ -30,7 +32,6 @@ export default function BottomNav() {
               className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium"
             >
               <motion.div
-                whileTap={{ scale: 0.85 }}
                 animate={isActive ? { scale: [1, 1.15, 1] } : { scale: 1 }}
                 transition={isActive ? { duration: 0.4, ease: "easeOut" } : spring}
               >
@@ -45,7 +46,7 @@ export default function BottomNav() {
                 animate={isActive ? { y: [0, -2, 0] } : { y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {item.label}
+                {t(item.labelKey)}
               </motion.span>
             </Link>
           );

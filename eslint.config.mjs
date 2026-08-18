@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Admin is a separate Next app with its own lint/typecheck scope.
+    "admin/**",
+    "admin/.next/**",
   ]),
 ]);
 

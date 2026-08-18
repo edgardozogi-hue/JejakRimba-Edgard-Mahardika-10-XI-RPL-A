@@ -4,41 +4,19 @@ import { motion } from "framer-motion";
 import { FileText } from "lucide-react";
 import PageShell from "../components/PageShell";
 import { fadeUp, staggerContainer } from "../lib/animations";
+import { useLanguage } from "../lib/i18n";
 
 const sections = [
-  {
-    title: "1. Ketentuan Umum",
-    content:
-      "Dengan menyewa alat melalui Jejak Rimba, pengguna menyetujui seluruh syarat dan ketentuan yang berlaku. Jejak Rimba adalah platform perantara yang mempertemukan penyewa dengan mitra penyedia alat camping dan pendakian di Malang Raya.",
-  },
-  {
-    title: "2. Pemesanan",
-    content:
-      "Pemesanan alat wajib dilakukan melalui platform Jejak Rimba. Pengguna harus mengisi data diri dengan benar dan lengkap. Pemesanan dianggap sah setelah mendapatkan konfirmasi dari sistem.",
-  },
-  {
-    title: "3. Pembayaran",
-    content:
-      "Pembayaran dilakukan di muka sesuai total biaya sewa yang tertera. Harga sewa sudah termasuk biaya pemakaian alat untuk durasi yang dipilih. Denda keterlambatan pengembalian dikenakan sebesar 50% dari harga sewa per hari.",
-  },
-  {
-    title: "4. Pengambilan & Pengembalian",
-    content:
-      "Alat diambil dan dikembalikan di lokasi mitra penyedia yang tertera. Pengguna wajib memeriksa kondisi alat saat pengambilan. Kerusakan akibat kelalaian pengguna menjadi tanggung jawab penyewa.",
-  },
-  {
-    title: "5. Pembatalan",
-    content:
-      "Pembatalan pemesanan dapat dilakukan maksimal H-1 sebelum jadwal pengambilan. Dana yang sudah dibayarkan akan dikembalikan sebesar 80% (potongan biaya admin 20%). Pembatalan di hari yang sama tidak mendapatkan pengembalian dana.",
-  },
-  {
-    title: "6. Tanggung Jawab",
-    content:
-      "Jejak Rimba tidak bertanggung jawab atas kecelakaan, cedera, atau kerugian yang terjadi selama penggunaan alat. Pengguna bertanggung jawab penuh atas keselamatan diri dan kelompok selama kegiatan outdoor.",
-  },
+  { titleKey: "syarat.s1t", contentKey: "syarat.s1c" },
+  { titleKey: "syarat.s2t", contentKey: "syarat.s2c" },
+  { titleKey: "syarat.s3t", contentKey: "syarat.s3c" },
+  { titleKey: "syarat.s4t", contentKey: "syarat.s4c" },
+  { titleKey: "syarat.s5t", contentKey: "syarat.s5c" },
+  { titleKey: "syarat.s6t", contentKey: "syarat.s6c" },
 ];
 
 export default function SyaratKetentuanPage() {
+  const { t } = useLanguage();
   return (
     <PageShell>
       <div className="mx-auto max-w-3xl px-6 py-12 md:py-16">
@@ -53,26 +31,26 @@ export default function SyaratKetentuanPage() {
             </div>
             <div>
               <p className="font-display text-[11px] font-bold tracking-[0.15em] text-accent">
-                DOKUMEN
+                {t("syarat.kicker")}
               </p>
               <h1 className="font-display text-2xl font-bold text-text-primary">
-                Syarat & Ketentuan
+                {t("syarat.title")}
               </h1>
             </div>
           </motion.div>
 
           <motion.p variants={fadeUp} className="mt-6 font-display text-sm leading-relaxed text-text-secondary">
-            Terakhir diperbarui: Juli 2026
+            {t("syarat.updated")}
           </motion.p>
 
           <div className="mt-8 space-y-8">
             {sections.map((s) => (
-              <motion.div key={s.title} variants={fadeUp}>
+              <motion.div key={s.titleKey} variants={fadeUp}>
                 <h2 className="font-display text-lg font-bold text-text-primary">
-                  {s.title}
+                  {t(s.titleKey)}
                 </h2>
                 <p className="mt-2 font-display text-sm leading-relaxed text-text-secondary">
-                  {s.content}
+                  {t(s.contentKey)}
                 </p>
               </motion.div>
             ))}

@@ -1,0 +1,52 @@
+@startuml
+title Tabel Referensi - Booking & Pembayaran (Jejak Rimba)
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica"
+skinparam noteBackgroundColor #F8F9FA
+skinparam noteBorderColor #4A5568
+
+note as T1
+**Tabel Status Booking**
+|===
+| Status | Keterangan | Aktor yang Bisa Ubah
+| menunggu_konfirmasi | Booking baru dibuat, menunggu pembayaran | Sistem
+| dikonfirmasi | Pembayaran sukses, vendor sudah setuju | Vendor
+| sedang_berjalan | Alat sedang disewa oleh pelanggan | Vendor
+| selesai | Alat dikembalikan, sewa berakhir | Vendor / Sistem
+| dibatalkan | Dibatalkan oleh pelanggan/vendor | Pelanggan / Vendor
+|===
+end note
+
+note as T2
+**Tabel Aktor & Tanggung Jawab**
+|===
+| Aktor | Aktivitas Utama
+| Pelanggan | Pilih alat, isi data, bayar, lihat status, beri ulasan
+| Sistem | Validasi, cek stok, hitung harga, bikin booking, panggil Midtrans, update status, kirim notif
+| Vendor | Konfirmasi booking, terima kembali alat, update status jadi selesai
+|===
+end note
+
+note as T3
+**Tabel Decision Points (Guard Conditions)**
+|===
+| Decision Point | Guard True | Guard False
+| Data Valid? | [Ya] → lanjut cek stok | [Tidak] → error validasi
+| Stok Tersedia? | [Stok Ada] → hitung & bikin booking | [Stok Kosong] → error stok
+| Midtrans Aktif? | [Ya] → buat snap token | [Tidak] → arahkan ke status
+| Hasil Bayar? | [Sukses/Pending] → update status | [Gagal/Ditutup] → error
+|===
+end note
+
+note as T4
+**Tabel Entitas Data Utama**
+|===
+| Entitas | Field Penting
+| bookings | id, renter_id, equipment_id, start_date, end_date, total_price, status, notes
+| equipment | id, name, category, price_per_day, stock, condition, vendor_id
+| vendors | id, business_name, whatsapp_number, address, is_active
+| profiles | id, full_name, phone_number, role (penyewa/vendor)
+|===
+end note
+
+@enduml

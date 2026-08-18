@@ -1,0 +1,50 @@
+@startuml
+title Activity Diagram - Booking & Pembayaran v2 (Jejak Rimba)
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica"
+
+|Pelanggan|
+start
+:Memilih Alat dari Katalog;
+:Mengisi Tanggal Sewa & Data Penyewa;
+:Menekan Tombol Bayar;
+
+|Sistem|
+:Memvalidasi Data Pemesanan;
+if (Data Valid?) then ([Ya])
+  :Memverifikasi Stok Alat;
+  if (Stok Tersedia?) then ([Stok Ada])
+    :Menghitung Durasi & Total Harga;
+    :Membuat Booking (Status: Menunggu Konfirmasi);
+    if (Midtrans Dikonfigurasi?) then ([Ya])
+      :Membuat Snap Token;
+      :Membuka Popup Pembayaran;
+      if (Hasil Pembayaran?) then ([Sukses / Pending])
+        :Memperbarui Status Booking;
+      else ([Gagal / Ditutup])
+        :Menampilkan Pesan Error;
+        stop
+      endif
+    else ([Tidak])
+      :Mengarahkan ke Halaman Status;
+    endif
+  else ([Stok Kosong])
+    :Menampilkan Error "Stok Tidak Cukup";
+    stop
+  endif
+else ([Tidak])
+  :Menampilkan Pesan Error Validasi;
+  stop
+endif
+
+fork
+  :Memperbarui Database Booking;
+fork again
+  :Mengirim Notifikasi Status;
+end fork
+
+|Vendor|
+:Mengonfirmasi Booking;
+stop
+
+@enduml
