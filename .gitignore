@@ -37,3 +37,5 @@ yarn-error.log*
 dev-server.log
 prompt.txt
 
+tools/drawio-setup.exe
+
