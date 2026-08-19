@@ -43,7 +43,23 @@ CREATE POLICY "booking_items_select" ON public.booking_items
     )
   );
 
--- ── 2) equipment.elevation ──
+-- ── 2) transactions (pembayaran Midtrans) ──
+-- Tabel ini dipakai createSnapToken (insert saat token dibuat),
+-- midtrans-webhook (update status pembayaran), dan admin (jumlah transaksi).
+CREATE TABLE IF NOT EXISTS public.transactions (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id    uuid NOT NULL REFERENCES public.bookings(id) ON DELETE CASCADE,
+  amount        numeric NOT NULL DEFAULT 0,
+  status        text NOT NULL DEFAULT 'menunggu',
+  payment_method text,
+  paid_at       timestamptz,
+  created_at    timestamptz DEFAULT now(),
+  updated_at    timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_transactions_booking ON public.transactions(booking_id);
+
+-- ── 3) equipment.elevation ──
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns
                  WHERE table_name='equipment' AND column_name='elevation') THEN

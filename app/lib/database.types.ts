@@ -122,12 +122,12 @@ export type Transaction = {
   booking_id: string;
   amount: number;
   payment_method: string | null;
-  payment_status: PaymentStatus;
+  status: string;
   midtrans_transaction_id: string | null;
   midtrans_order_id: string | null;
   paid_at: string | null;
   created_at: string;
-  updated_at: string;
+  updated_at: string | null;
 };
 
 // ── TABEL: REVIEWS ──

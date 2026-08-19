@@ -46,15 +46,14 @@ export async function createSnapToken(
     .single();
 
   // Profile mungkin belum ada, pakai data user auth sebagai fallback
+  // Catatan: kolom email tidak ada di tabel profiles, email dipakai dari user auth.
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, email, phone")
+    .select("full_name, phone")
     .eq("id", booking.renter_id)
     .maybeSingle();
 
-  const customerEmail = profile?.email 
-    || user.email 
-    || `${bookingId.substring(0, 8)}@placeholder.com`;
+  const customerEmail = user.email || `${bookingId.substring(0, 8)}@placeholder.com`;
   const customerName = profile?.full_name 
     || user.user_metadata?.full_name 
     || "User";

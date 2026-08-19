@@ -123,7 +123,8 @@ export async function getVendorOverview(): Promise<VendorOverview> {
   let pendingCount = 0;
   let bookingList: VendorBookingItem[] = [];
   if (ids.length > 0) {
-    const { data: bookings } = await supabase
+    // Booking single: equipment milik vendor ini.
+    const { data: singleBookings } = await supabase
       .from("bookings")
       .select(`
         id,
@@ -138,9 +139,28 @@ export async function getVendorOverview(): Promise<VendorOverview> {
       `)
       .in("equipment_id", ids)
       .order("created_at", { ascending: false });
-    bookingCount = bookings?.length ?? 0;
-    pendingCount = (bookings ?? []).filter((b) => b.status === "menunggu_konfirmasi").length;
-    bookingList = (bookings ?? []).map((b) => ({
+
+    // Booking multi: parent equipment_id null, cek via booking_items yang
+    // merujuk ke alat milik vendor ini.
+    const { data: multiBookings } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        quantity,
+        start_date,
+        end_date,
+        total_price,
+        status,
+        created_at,
+        renter:profiles!renter_id(full_name),
+        booking_items!inner(
+          equipment_id
+        )
+      `)
+      .in("booking_items.equipment_id", ids)
+      .order("created_at", { ascending: false });
+
+    const singleList: VendorBookingItem[] = (singleBookings ?? []).map((b) => ({
       id: b.id,
       equipment_name: b.equipment?.[0]?.name ?? "Unknown",
       renter_name: b.renter?.[0]?.full_name ?? "Penyewa",
@@ -151,6 +171,24 @@ export async function getVendorOverview(): Promise<VendorOverview> {
       status: b.status,
       created_at: b.created_at,
     }));
+    const multiList: VendorBookingItem[] = (multiBookings ?? []).map((b) => ({
+      id: b.id,
+      equipment_name: `${(b.booking_items?.length ?? 0)} alat`,
+      renter_name: b.renter?.[0]?.full_name ?? "Penyewa",
+      quantity: b.quantity,
+      start_date: b.start_date,
+      end_date: b.end_date,
+      total_price: Number(b.total_price),
+      status: b.status,
+      created_at: b.created_at,
+    }));
+
+    const merged = [...multiList, ...singleList].sort((a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    bookingList = merged;
+    bookingCount = merged.length;
+    pendingCount = merged.filter((b) => b.status === "menunggu_konfirmasi").length;
   }
 
   const list: VendorEquipmentItem[] = (equipment ?? []).map((e) => ({

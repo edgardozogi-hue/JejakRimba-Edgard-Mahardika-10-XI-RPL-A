@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { supabase } from "./supabase";
 
 export type CartItem = {
   equipmentId: string;
@@ -34,23 +35,72 @@ const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "jejak-rimba-cart";
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      return raw ? (JSON.parse(raw) as CartItem[]) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [items, setItems] = useState<CartItem[]>([]);
 
   useEffect(() => {
+    let mounted = true;
+
+    const init = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!mounted) return;
+
+      const signedIn = Boolean(session?.user);
+      setIsSignedIn(signedIn);
+
+      // Guest: cart hanya di memori (tidak dipersist) → hilang saat refresh.
+      // Login: restore cart dari localStorage.
+      if (!signedIn) {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // abaikan
+        }
+        setItems([]);
+      } else {
+        let restored: CartItem[] = [];
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          restored = raw ? (JSON.parse(raw) as CartItem[]) : [];
+        } catch {
+          // abaikan
+        }
+        setItems(restored);
+      }
+    };
+
+    init();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      const signedIn = Boolean(session?.user);
+      setIsSignedIn(signedIn);
+      if (!signedIn) {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // abaikan
+        }
+        setItems([]);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isSignedIn) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
       // storage penuh / private mode — abaikan
     }
-  }, [items]);
+  }, [items, isSignedIn]);
 
   const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
     setItems((prev) => {
