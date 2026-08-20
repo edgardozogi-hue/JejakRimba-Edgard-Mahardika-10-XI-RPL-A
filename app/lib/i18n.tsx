@@ -1076,7 +1076,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   const t = (key: string) => {
-    if (!mounted) return key;
+    if (!mounted) return translations["id"]?.[key] ?? key;
     return translations[locale][key] ?? key;
   };
 
