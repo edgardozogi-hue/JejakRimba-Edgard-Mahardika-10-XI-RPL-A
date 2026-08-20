@@ -21,6 +21,14 @@ function formatPrice(price: number) {
   return `Rp${price.toLocaleString("id-ID")}`;
 }
 
+function todayLocal(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export default function KeranjangPage() {
   const { items, itemCount, totalPerDay, setQuantity, removeItem } = useCart();
   const router = useRouter();
@@ -29,7 +37,7 @@ export default function KeranjangPage() {
   const [end, setEnd] = useState("");
   const [dateError, setDateError] = useState<string | null>(null);
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayLocal();
 
   const days = useMemo(() => {
     if (!start || !end) return 0;
@@ -176,7 +184,16 @@ export default function KeranjangPage() {
                     type="date"
                     value={start}
                     min={today}
-                    onChange={(e) => setStart(e.target.value)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setStart(v);
+                      setDateError(null);
+                      // Jika tanggal ambil pindah setelah tanggal kembali,
+                      // reset tanggal kembali agar selalu valid (end >= start).
+                      if (v && end && new Date(end) < new Date(v)) {
+                        setEnd(v);
+                      }
+                    }}
                     className="w-full rounded-xl border border-surface-border bg-bg px-3 py-[11px] font-archivo text-sm text-text-primary outline-none transition focus:border-accent focus:ring-1 focus:ring-accent/30"
                   />
                 </div>
@@ -188,7 +205,7 @@ export default function KeranjangPage() {
                     type="date"
                     value={end}
                     min={start || today}
-                    onChange={(e) => setEnd(e.target.value)}
+                    onChange={(e) => { setEnd(e.target.value); setDateError(null); }}
                     className="w-full rounded-xl border border-surface-border bg-bg px-3 py-[11px] font-archivo text-sm text-text-primary outline-none transition focus:border-accent focus:ring-1 focus:ring-accent/30"
                   />
                 </div>
