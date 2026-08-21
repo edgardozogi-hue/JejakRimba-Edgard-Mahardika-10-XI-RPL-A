@@ -9,8 +9,7 @@ import { adminUpdateBookingStatus } from "@/actions/admin";
 import { AdminPageHeader, SearchInput, Table, TableHead, Th, TableRow, Td, EmptyState } from "@/components/ui";
 
 const STATUS_UI: Record<string, string> = {
-  menunggu_pembayaran: "admin.booking_menunggu_pembayaran",
-  dibayar: "admin.booking_dibayar",
+  menunggu_konfirmasi: "admin.booking_menunggu_konfirmasi",
   dikonfirmasi: "admin.booking_dikonfirmasi",
   sedang_berjalan: "admin.booking_sedang_berjalan",
   selesai: "admin.booking_selesai",
@@ -18,16 +17,15 @@ const STATUS_UI: Record<string, string> = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  menunggu_pembayaran: "bg-amber-500/10 text-amber-500",
-  dibayar: "bg-blue-500/10 text-blue-500",
-  dikonfirmasi: "bg-accent/15 text-accent",
+  menunggu_konfirmasi: "bg-amber-500/10 text-amber-500",
+  dikonfirmasi: "bg-blue-500/10 text-blue-500",
   sedang_berjalan: "bg-violet-500/10 text-violet-500",
   selesai: "bg-moss/15 text-moss",
   dibatalkan: "bg-red-500/10 text-red-500",
 };
 
 const NEXT_STATUS: Record<string, string> = {
-  dibayar: "dikonfirmasi",
+  menunggu_konfirmasi: "dikonfirmasi",
   dikonfirmasi: "sedang_berjalan",
   sedang_berjalan: "selesai",
 };
@@ -127,7 +125,14 @@ export default function BookingsClient({
                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-bg-elevated">
                       <ClipboardList size={13} className="text-accent" />
                     </span>
-                    {b.equipment_name}
+                    <span className="flex flex-col">
+                      <span>{b.equipment_name}</span>
+                      {b.is_multi && (
+                        <span className="text-[11px] font-normal text-text-secondary">
+                          {b.item_count} item
+                        </span>
+                      )}
+                    </span>
                   </span>
                 </Td>
                 <Td>{b.vendor_name}</Td>
@@ -143,7 +148,7 @@ export default function BookingsClient({
                       STATUS_BADGE[b.status] ?? "bg-bg-elevated text-text-secondary"
                     }`}
                   >
-                    {t(STATUS_UI[b.status] ?? "admin.booking_menunggu_pembayaran")}
+                    {t(STATUS_UI[b.status] ?? "admin.booking_menunggu_konfirmasi")}
                   </span>
                 </Td>
                 <Td>

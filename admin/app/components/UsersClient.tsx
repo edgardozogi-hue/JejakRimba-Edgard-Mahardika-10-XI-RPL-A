@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Users } from "lucide-react";
+import { Users, Trash2 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import type { AdminUserRow } from "@/actions/admin";
-import { updateUserRole } from "@/actions/admin";
+import { updateUserRole, deleteUser } from "@/actions/admin";
 import { AdminPageHeader, SearchInput, Table, TableHead, Th, TableRow, Td, EmptyState } from "@/components/ui";
 
 const ROLE_UI: Record<string, string> = {
@@ -54,6 +54,16 @@ export default function UsersClient({
     } else {
       router.refresh();
     }
+  }
+
+  async function remove(userId: string, name: string | null) {
+    if (!window.confirm(t("admin.user_delete_confirm").replace("{name}", name ?? "—"))) return;
+    setBusyId(userId);
+    setErr(null);
+    const res = await deleteUser(userId);
+    setBusyId(null);
+    if (res.error) setErr(res.error);
+    else router.refresh();
   }
 
   function fmtDate(v: string) {
@@ -129,16 +139,28 @@ export default function UsersClient({
                 </Td>
                 <Td className="text-text-secondary">{fmtDate(u.created_at)}</Td>
                 <Td>
-                  <select
-                    value={u.role}
-                    disabled={busyId === u.id}
-                    onChange={(e) => changeRole(u.id, e.target.value)}
-                    className="rounded-lg border border-surface-border bg-surface px-2 py-1.5 text-xs text-text-primary outline-none transition focus:border-accent/40 disabled:opacity-50"
-                  >
-                    <option value="renter">{t("admin.role_renter")}</option>
-                    <option value="vendor">{t("admin.role_vendor")}</option>
-                    <option value="admin">{t("admin.role_admin")}</option>
-                  </select>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={u.role}
+                      disabled={busyId === u.id}
+                      onChange={(e) => changeRole(u.id, e.target.value)}
+                      className="rounded-lg border border-surface-border bg-surface px-2 py-1.5 text-xs text-text-primary outline-none transition focus:border-accent/40 disabled:opacity-50"
+                    >
+                      <option value="renter">{t("admin.role_renter")}</option>
+                      <option value="vendor">{t("admin.role_vendor")}</option>
+                      <option value="admin">{t("admin.role_admin")}</option>
+                    </select>
+                    {u.role !== "admin" && (
+                      <button
+                        onClick={() => remove(u.id, u.full_name)}
+                        disabled={busyId === u.id}
+                        title={t("admin.delete")}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-red-400/30 px-2.5 py-1.5 text-xs font-semibold text-red-500 transition hover:bg-red-500/10 disabled:opacity-50"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                  </div>
                 </Td>
               </TableRow>
             ))}

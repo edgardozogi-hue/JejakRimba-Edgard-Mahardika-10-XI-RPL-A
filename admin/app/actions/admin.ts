@@ -71,6 +71,8 @@ export type AdminBookingRow = {
   total_price: number;
   status: string;
   created_at: string;
+  is_multi: boolean;
+  item_count: number;
 };
 
 // ── Overview ──
@@ -181,6 +183,64 @@ export async function updateUserRole(
   return { error: null };
 }
 
+// Hapus user beserta seluruh data terkait (booking, transaksi, review, notifikasi).
+// User yang masih memiliki vendor harus dihapus vendornya dulu.
+export async function deleteUser(userId: string) {
+  const supabase = await requireAdmin();
+  if (!supabase) return { error: "Unauthorized" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
+  if (!profile) return { error: "User tidak ditemukan." };
+  if (profile.role === "admin") {
+    return { error: "Akun admin tidak bisa dihapus dari dashboard." };
+  }
+
+  const { count: vendorCount } = await supabase
+    .from("vendors")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_id", userId);
+  if ((vendorCount ?? 0) > 0) {
+    return { error: "User masih memiliki vendor. Hapus vendornya dulu di menu Vendors." };
+  }
+
+  const { data: bookingIds } = await supabase
+    .from("bookings")
+    .select("id")
+    .eq("renter_id", userId);
+  const ids = (bookingIds ?? []).map((b) => b.id);
+
+  if (ids.length > 0) {
+    await supabase.from("transactions").delete().in("booking_id", ids);
+    await supabase.from("reviews").delete().in("booking_id", ids);
+    await supabase.from("notifications").delete().in("booking_id", ids);
+    await supabase.from("booking_items").delete().in("booking_id", ids);
+    const { error: delBookingErr } = await supabase
+      .from("bookings")
+      .delete()
+      .in("id", ids);
+    if (delBookingErr) return { error: delBookingErr.message };
+  }
+
+  await supabase.from("reviews").delete().eq("reviewer_id", userId);
+  await supabase.from("notifications").delete().eq("profile_id", userId);
+
+  const { error: delProfileErr } = await supabase
+    .from("profiles")
+    .delete()
+    .eq("id", userId);
+  if (delProfileErr) return { error: delProfileErr.message };
+
+  const { error: delAuthErr } = await supabase.auth.admin.deleteUser(userId);
+  if (delAuthErr) return { error: delAuthErr.message };
+
+  revalidatePath("/");
+  return { error: null };
+}
+
 // ── Vendors ──
 
 export async function listVendors() {
@@ -238,6 +298,138 @@ export async function approveVendor(vendorId: string) {
     .from("vendors")
     .update({ is_active: true })
     .eq("id", vendorId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/");
+  return { error: null };
+}
+
+export async function toggleVendorActive(vendorId: string, isActive: boolean) {
+  const supabase = await requireAdmin();
+  if (!supabase) return { error: "Unauthorized" };
+
+  const { error } = await supabase
+    .from("vendors")
+    .update({ is_active: isActive })
+    .eq("id", vendorId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/");
+  return { error: null };
+}
+
+// Hapus vendor beserta equipment, booking, transaksi, review, dan item terkait.
+export async function deleteVendor(vendorId: string) {
+  const supabase = await requireAdmin();
+  if (!supabase) return { error: "Unauthorized" };
+
+  const { data: equipmentIds } = await supabase
+    .from("equipment")
+    .select("id")
+    .eq("vendor_id", vendorId);
+  const eqIds = (equipmentIds ?? []).map((e) => e.id);
+
+  if (eqIds.length > 0) {
+    const { data: bookingIds } = await supabase
+      .from("bookings")
+      .select("id")
+      .in("equipment_id", eqIds);
+    const bIds = (bookingIds ?? []).map((b) => b.id);
+
+    // Booking multi-item yang memuat equipment vendor ini juga ikut dihapus.
+    const { data: multiItemBookings } = await supabase
+      .from("booking_items")
+      .select("booking_id")
+      .in("equipment_id", eqIds);
+    const mIds = (multiItemBookings ?? [])
+      .map((r) => r.booking_id)
+      .filter((id) => !bIds.includes(id));
+    const allBookingIds = [...bIds, ...mIds];
+
+    await supabase.from("reviews").delete().in("equipment_id", eqIds);
+
+    if (allBookingIds.length > 0) {
+      await supabase.from("transactions").delete().in("booking_id", allBookingIds);
+      await supabase.from("reviews").delete().in("booking_id", allBookingIds);
+      await supabase.from("notifications").delete().in("booking_id", allBookingIds);
+      await supabase.from("booking_items").delete().in("booking_id", allBookingIds);
+      const { error: delBErr } = await supabase
+        .from("bookings")
+        .delete()
+        .in("id", allBookingIds);
+      if (delBErr) return { error: delBErr.message };
+    }
+
+    const { error: delEqErr } = await supabase
+      .from("equipment")
+      .delete()
+      .in("id", eqIds);
+    if (delEqErr) return { error: delEqErr.message };
+  }
+
+  const { error: delVErr } = await supabase
+    .from("vendors")
+    .delete()
+    .eq("id", vendorId);
+  if (delVErr) return { error: delVErr.message };
+
+  revalidatePath("/");
+  return { error: null };
+}
+
+// ── Reviews ──
+
+export type AdminReviewRow = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  reviewer_name: string | null;
+  equipment_name: string;
+};
+
+export async function listReviews() {
+  const supabase = await requireAdmin();
+  if (!supabase) return { reviews: [], error: "Unauthorized" };
+
+  const { data, error } = await supabase
+    .from("reviews")
+    .select(
+      "id, rating, comment, created_at, reviewer:profiles!reviewer_id(full_name), equipment:equipment!equipment_id(name)"
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) return { reviews: [], error: error.message };
+
+  const reviews: AdminReviewRow[] = (
+    data as {
+      id: string;
+      rating: number;
+      comment: string | null;
+      created_at: string;
+      reviewer?: { full_name: string | null }[];
+      equipment?: { name: string }[];
+    }[]
+  ).map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    comment: r.comment,
+    created_at: r.created_at,
+    reviewer_name: r.reviewer?.[0]?.full_name ?? null,
+    equipment_name: r.equipment?.[0]?.name ?? "Unknown",
+  }));
+
+  return { reviews, error: null };
+}
+
+export async function deleteReview(reviewId: string) {
+  const supabase = await requireAdmin();
+  if (!supabase) return { error: "Unauthorized" };
+
+  const { error } = await supabase
+    .from("reviews")
+    .delete()
+    .eq("id", reviewId);
 
   if (error) return { error: error.message };
   revalidatePath("/");
@@ -316,7 +508,7 @@ export async function listBookings() {
   const { data, error } = await supabase
     .from("bookings")
     .select(
-      "id, quantity, start_date, end_date, total_price, status, created_at, equipment:equipment!equipment_id!inner(name, vendor_id), renter:profiles!renter_id(full_name)"
+      "id, quantity, start_date, end_date, total_price, status, created_at, equipment_id, equipment:equipment!equipment_id(name, vendor_id), renter:profiles!renter_id(full_name), booking_items!booking_id(quantity, equipment:equipment!equipment_id(name, vendor_id))"
     )
     .order("created_at", { ascending: false });
 
@@ -336,22 +528,39 @@ export async function listBookings() {
       total_price: number;
       status: string;
       created_at: string;
+      equipment_id: string | null;
       equipment?: { name: string; vendor_id: string }[];
       renter?: { full_name: string | null }[];
+      booking_items?: { quantity: number; equipment?: { name: string; vendor_id: string }[] }[];
     }[]
   ).map((b) => {
-    const eq = b.equipment?.[0];
+    const isMulti = b.equipment_id === null;
+    const parentEq = b.equipment?.[0];
+    const items = isMulti ? b.booking_items ?? [] : [];
+
+    const names = isMulti
+      ? items.map((it) => it.equipment?.[0]?.name).filter(Boolean) as string[]
+      : parentEq
+        ? [parentEq.name]
+        : [];
+    const vendorId = isMulti
+      ? items[0]?.equipment?.[0]?.vendor_id
+      : parentEq?.vendor_id;
+
     return {
       id: b.id,
       renter_name: b.renter?.[0]?.full_name ?? null,
-      equipment_name: eq?.name ?? "Unknown",
-      vendor_name: vendorMap.get(eq?.vendor_id) ?? "Unknown",
+      equipment_name:
+        names.length > 1 ? names.join(", ") : names[0] ?? "Unknown",
+      vendor_name: vendorMap.get(vendorId ?? "") ?? "Unknown",
       quantity: b.quantity,
       start_date: b.start_date,
       end_date: b.end_date,
       total_price: Number(b.total_price),
       status: b.status,
       created_at: b.created_at,
+      is_multi: isMulti,
+      item_count: isMulti ? items.length : 1,
     };
   });
 

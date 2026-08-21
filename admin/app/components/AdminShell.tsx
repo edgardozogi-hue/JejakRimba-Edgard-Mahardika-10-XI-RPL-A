@@ -10,6 +10,7 @@ import {
   Store,
   Package,
   ClipboardList,
+  Star,
   LogOut,
   ExternalLink,
   Menu,
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
   { href: "/vendors", key: "admin.nav_vendors", icon: Store },
   { href: "/equipment", key: "admin.nav_equipment", icon: Package },
   { href: "/bookings", key: "admin.nav_bookings", icon: ClipboardList },
+  { href: "/reviews", key: "admin.nav_reviews", icon: Star },
 ];
 
 export default function AdminShell({
